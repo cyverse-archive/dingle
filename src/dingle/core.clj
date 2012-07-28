@@ -2,10 +2,13 @@
   (:use [dingle.git]))
 
 (defn full-repo-string
+  "Prepends git URL to the name of the repo. Use with list-of-repos."
   [repo]
   (str "git@github.com:iPlantCollaborativeOpenSource/" repo))
 
 (def list-of-repos
+  "List of the basenames for the github projects that we want to manage."
+  
   ["iplant-clojure-commons.git"
    "clj-jargon.git"
    "Nibblonian.git"
@@ -20,7 +23,10 @@
    "Donkey.git"
    "Conrad.git"])
 
-(defn workflow
+(defn tagging-workflow
+  "Checks out the repo, merges the dev branch into master, pushes up the 
+   merged changes, tags the repo with the value in tag, and finally
+   pushes up the tags."
   [repo tag]
   (execute
     (git-clone repo)
@@ -31,13 +37,16 @@
     (git-push-tags repo)))
 
 (defn dingle
-  [tag]
-  (let [repos (mapv full-repo-string list-of-repos)]
-    (execute (clean))
-    
-    (doseq [repo repos]
-      (workflow repo))))
+  "If passed only a tag, then it calls (tagging-workflow) on each of the
+   repos in list-of-repos.
 
-(defn -main
-  [& args]
-  (println "booyah"))
+   If passed a tag and a list of repos, then it calls (tagging-workflow)
+   on each of the repos passed in. You'll need to map full-repo-string
+   on the list of repos that you pass in (or use full git repo URLs)."
+  ([tag]
+    (dingle tag (mapv full-repo-string list-of-repos)))
+  ([tag repos]
+    (execute (clean))
+    (doseq [repo repos]
+      (tagging-workflow repo))))
+
