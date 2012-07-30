@@ -1,5 +1,6 @@
 (ns dingle.core
-  (:use [dingle.git]))
+  (:use [dingle.scripting] 
+        [dingle.git]))
 
 (defn full-repo-string
   "Prepends git URL to the name of the repo. Use with list-of-repos."
@@ -36,7 +37,7 @@
     (git-tag repo tag)
     (git-push-tags repo)))
 
-(defn dingle
+(defn merge-and-tag-repos
   "If passed only a tag, then it calls (tagging-workflow) on each of the
    repos in list-of-repos.
 

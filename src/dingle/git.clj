@@ -1,8 +1,7 @@
 (ns dingle.git
-  (:use [pallet.stevedore])
-  (:require [pallet.common.shell :as sh]
-            [pallet.stevedore.bash :as bash]
-            [clojure-commons.file-utils :as ft]
+  (:use [pallet.stevedore]
+        [dingle.scripting])
+  (:require [clojure-commons.file-utils :as ft]
             [clojure.string :as string])
   (:import [java.io File]))
 
@@ -11,16 +10,6 @@
 (defn repo->dirname
   [repo]
   (ft/path-join wdir (string/replace (ft/basename repo) #"\.git" "")))
-
-(defn execute
-  [& scripts]
-  (doseq [scr scripts] 
-     (println (:out (sh/bash scr)))))
-
-(defmacro scriptify
-  [& body]
-  `(with-script-language :pallet.stevedore.bash/bash
-    (script ~@body)))
 
 (defn clean
   []
