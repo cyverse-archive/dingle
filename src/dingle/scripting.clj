@@ -1,6 +1,6 @@
 (ns dingle.scripting
   (:use [pallet.stevedore]
-        [clj-ssh.cli])
+        [clj-ssh.ssh])
   (:require [pallet.common.shell :as sh]
             [pallet.stevedore.bash :as bash]))
 
@@ -14,11 +14,13 @@
   `(with-script-language :pallet.stevedore.bash/bash
     (script ~@body)))
 
+(defn sudo-cmd
+  [cmd pass]
+  (str "echo " pass " | sudo -S " cmd))
+
 (defn remote-execute
-  [host port user pass & scripts]
-  (for [scr scripts]
-    (ssh host scr 
-         :port port 
-         :username user 
-         :password pass 
-         :strict-host-key-checking :no)))
+  [host port user pass cmd]
+  (let [conn-str (str user "@" host)] 
+    (execute
+      (scriptify
+        (ssh "-t" "-t" "-p" ~port ~conn-str ~cmd)))))
