@@ -45,7 +45,7 @@
    on each of the repos passed in. You'll need to map full-repo-string
    on the list of repos that you pass in (or use full git repo URLs)."
   ([tag]
-    (dingle tag (mapv full-repo-string list-of-repos)))
+    (merge-and-tag-repos tag (mapv full-repo-string list-of-repos)))
   ([tag repos]
     (execute (clean))
     (doseq [repo repos]
