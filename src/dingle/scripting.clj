@@ -33,9 +33,13 @@
   [cmd pass]
   (str "echo " pass " | sudo -S " cmd))
 
+(defn ssh-command
+  [port conn-str cmd]
+  (let [quoted-cmd (str "'" cmd "'")] 
+    (scriptify
+      (ssh "-t" "-t" "-p" ~port ~conn-str ~quoted-cmd))))
+
 (defn remote-execute
-  [host port user pass cmd]
+  [host port user cmd]
   (let [conn-str (str user "@" host)] 
-    (execute
-      (scriptify
-        (ssh "-t" "-t" "-p" ~port ~conn-str ~cmd)))))
+    (execute (ssh-command port conn-str cmd))))
