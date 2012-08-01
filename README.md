@@ -14,7 +14,7 @@ This project is meant to be used from Leiningen's REPL.
 
 Create a file at ~/.dingle/config.clj. It should look like the following
 
-'''
+```
 (ns dingle.config)
 
 (def config
@@ -56,7 +56,7 @@ Create a file at ~/.dingle/config.clj. It should look like the following
                        "osm"
                        "iplant-email"
                        "conrad"]))
-'''
+```
 
 Substitute the values for your accounts in the above as appropriate. Do *NOT* check them in to a public github repo.
 
@@ -66,11 +66,11 @@ Assuming you've got the config file in place and Dingle checked out, run 'lein r
 
 Here's an example workflow:
 
-'''
+```
 (configure)
 (merge-and-tag-prereqs "a-git-tag-string")
 (build-prereqs)
 (merge-and-tag-repos "a-git-tag-string")
-'''
+```
 
 Right now, none of the functions that interact with Jenkins are blocking, so you'll have to watch Jenkins to tell when builds are complete. This will be fixed in the future, most likely.
