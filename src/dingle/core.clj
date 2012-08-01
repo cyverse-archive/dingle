@@ -11,7 +11,6 @@
 
 (def list-of-repos
   "List of the basenames for the github projects that we want to manage."
-  
   ["iplant-clojure-commons.git"
    "clj-jargon.git"
    "Nibblonian.git"
