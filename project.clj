@@ -8,6 +8,7 @@
                  [org.iplantc/clojure-commons "1.2.0-SNAPSHOT"]
                  [org.cloudhoist/stevedore "0.7.2"]
                  [clj-ssh "0.4.0"]
+                 [slingshot "0.10.1"]
                  [com.cemerick/url "0.0.6"]]
   :repositories {"sonatype"
                  "http://oss.sonatype.org/content/repositories/releases"}
