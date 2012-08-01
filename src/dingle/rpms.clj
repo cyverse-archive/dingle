@@ -44,3 +44,47 @@
         (filter 
           #(not (string/blank? %)) 
           (string/split rpm-listing #"\n"))))))
+
+(defn version-splitter
+  [version-str]
+  (mapv #(Integer/parseInt %) (string/split version-str #"\.")))
+
+(defn >-version
+  "Is version a greater than version b? Maps should be in the format returned
+   by (list-rpms)."
+  [rpm1 rpm2]
+  (let [version1 (conj (version-splitter (:version rpm1)) 
+                       (Integer/parseInt (:release rpm1)))
+        version2 (conj (version-splitter (:version rpm2))
+                       (Integer/parseInt (:release rpm2)))]
+    (loop [v1 version1
+           v2 version2]
+      (let [e1 (first v1)
+            e2 (first v2)]
+        (cond
+          (and (not e1) e2)  false   ;e1 is shorter and is otherwise =
+          (and (not e2) e1)  true    ;e2 is shorter and otherwise =
+          (and (not e1)              
+               (not e2))     false   ;e1 and e1 are same length and =
+          (> e1 e2)          true    ;e1 is > than e2
+          (< e1 e2)          false
+          (= e1 e2)          (recur (rest v1) (rest v2)))))))
+
+(defn latest-rpm
+  "Uses (list-rpms) to get a list of RPM versions and then returns the map
+   containing info on the latest version.
+
+   The params are the same as for (list-rpms).
+
+   The return value is a hash-map in this format:
+
+   {
+       :name \"RPM name\"
+       :version \"RPM version\"
+       :release \"RPM release\"
+       :arch \"RPM arch\"
+   }
+  "
+  [host port user rpm-name yum-path]
+  (let [rpm-listing (list-rpms host port user rpm-name yum-path)]
+    (first (sort >-version rpm-listing))))
