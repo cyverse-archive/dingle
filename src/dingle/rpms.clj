@@ -5,16 +5,13 @@
 (defn exec-list-rpms
   "Uses (remote-execute) to return a listing of RPM information from yum-path."
   [host port user rpm-name yum-path]
-  (let [search-str (str rpm-name "*.rpm")] 
-    (:out 
-      (first 
-        (remote-execute
-          host
-          port
-          user
-          (scriptify 
-            (cd ~yum-path) 
-            (rpm -qp --qf "\"%{name}\\t%{version}\\t%{release}\\t%{arch}\\n\"" ~search-str)))))))
+  (let [search-str   (str rpm-name "*.rpm")
+        query-format "\"%{name}\\t%{version}\\t%{release}\\t%{arch}\\n\""
+        remote-exec  (comp :out first (partial remote-execute host port user))] 
+    (remote-exec 
+      (scriptify 
+        (cd ~yum-path) 
+        (rpm -qp --qf ~query-format ~search-str)))))
 
 (defn list-rpms
   "Access 'host' on 'port' as 'user' and returns a listing of RPM information
