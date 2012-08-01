@@ -56,37 +56,34 @@
 (defn restart-services
   "Restarts the backend services, one-by-one"
   [host port ssh-user sudo-pass]
-  (report-all 
-    (remote-execute 
-      host 
-      port 
-      ssh-user
-      (service-restart "iplant-services" sudo-pass))))
+  (remote-execute 
+    host 
+    port 
+    ssh-user
+    (service-restart "iplant-services" sudo-pass)))
 
 (defn update-services
   "Updates the backend service."
   [host port ssh-user sudo-pass]
-  (report-all
-    (let [yu-part (partial yum-update sudo-pass)] 
-      (remote-execute
-        host
-        port
-        ssh-user
-        (apply yu-part list-of-services)))))
+  (let [yu-part (partial yum-update sudo-pass)] 
+    (remote-execute
+      host
+      port
+      ssh-user
+      (apply yu-part list-of-services))))
 
 (defn tagging-workflow
   "Checks out the repo, merges the dev branch into master, pushes up the 
    merged changes, tags the repo with the value in tag, and finally
    pushes up the tags."
   [repo tag]
-  (report-all 
-    (execute
-      (git-clone repo)
-      (git-checkout repo "master")
-      (git-merge repo "master" "dev")
-      (git-push repo)
-      (git-tag repo tag)
-      (git-push-tags repo))))
+  (execute
+    (git-clone repo)
+    (git-checkout repo "master")
+    (git-merge repo "master" "dev")
+    (git-push repo)
+    (git-tag repo tag)
+    (git-push-tags repo)))
 
 (defn merge-and-tag-repos
   "If passed only a tag, then it calls (tagging-workflow) on each of the
