@@ -93,6 +93,7 @@
     (report-all (tagging-workflow repo tag))))
 
 (defn build-prereqs
+  "Build the prereq jobs."
   []
   (doseq [job (:prereq-jobs @config)]
     (report-all 
