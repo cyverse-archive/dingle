@@ -161,3 +161,22 @@
   (doseq [rpm-map (new-qa-rpms)]
     (println (rpms/rpm-map->rpm-name rpm-map))))
 
+(defn copy-rpms-to-qa
+  "Copies new RPMs to QA and updates the yum repository."
+  []
+  (let [host      (:rpm-host @config)
+        port      (:rpm-host-port @config)
+        user      (:rpm-host-user @config)
+        sudo-pass (:sudo-pass @config)
+        dev-dir   (ft/path-join (:rpm-base-dir @config) 
+                                (:rpm-dev-dir @config))
+        qa-dir    (ft/path-join (:rpm-base-dir @config)
+                                (:rpm-qa-dir @config))]
+    (report-all
+      (mapv
+        #(rpms/copy-rpms host port user sudo-pass % dev-dir qa-dir)
+        (new-qa-rpms)))
+    
+    (report-all 
+      (rpms/createrepo host port user sudo-pass qa-dir "root:www"))))
+
