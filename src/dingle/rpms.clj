@@ -67,7 +67,7 @@
           (and (not e1)              
                (not e2))     false   ;e1 and e1 are same length and =
           (> e1 e2)          true    ;e1 is > than e2
-          (< e1 e2)          false
+          (< e1 e2)          false   ;duh
           (= e1 e2)          (recur (rest v1) (rest v2)))))))
 
 (defn latest-rpm
@@ -88,3 +88,58 @@
   [host port user rpm-name yum-path]
   (let [rpm-listing (list-rpms host port user rpm-name yum-path)]
     (first (sort >-version rpm-listing))))
+
+(defn rpm-map->rpm-name
+  "Takes in a map representing an RPM and turns it into an RPM name."
+  [rpm-map]
+  (str 
+    (:name rpm-map) 
+    "-" 
+    (:version rpm-map) 
+    "-" 
+    (:release rpm-map) 
+    "." 
+    (:arch rpm-map) 
+    ".rpm"))
+
+(defn copy-rpm
+  "Copies an RPM from one directory to another on a remote machine.
+
+   Params:
+     host - The hostname of the machine to connect to. String.
+     port - Integer for the port to connect to.
+     user - The username to connect as. String.
+     sudo-pass - Sudo password for the user on the remote machine. String.
+     rpm-map - Hash map returned from (list-rpms) representing an RPM.
+     from-dir - Directory to copy the RPM from. Full path. String.
+     to-dir - Directory to copy the RPM to. Full path. String."
+  [host port user sudo-pass rpm-map from-dir to-dir]
+  (let [rpm-filename (rpm-map->rpm-name rpm-map)
+        rpm-from     (ft/path-join from-dir rpm-filename)] 
+    (remote-execute
+      host
+      port
+      user
+      (sudo-cmd
+        (scriptify
+          (cp ~rpm-from ~to-dir))))))
+
+(defn createrepo
+  "Runs createrepo on a directory on the remote machine.
+
+   Params:
+     host - The hostname of the machine to connect to. String.
+     port - Integer for the port to connect to.
+     user - The user to connect as. String.
+     sudo-pass - Sudo password for the user on the remote machine. String.
+     repo-dir - Repo directory. Full-path string.
+     user-groups - String containing the user:group to pass to chmod."
+  [host port user sudo-pass repo-dir user-groups]
+  (remote-execute
+    host
+    port
+    user
+    (sudo-cmd
+      (scriptify
+        (createrepo "--update" ~repo-dir)
+        (chmod "-R" ~user-groups ~repo-dir)))))
