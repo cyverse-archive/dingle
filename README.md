@@ -101,3 +101,5 @@ Here's an example workflow:
 ```
 
 Right now, none of the functions that interact with Jenkins are blocking, so you'll have to watch Jenkins to tell when builds are complete. This will be fixed in the future, most likely.
+
+Major workflow functions are located in the dingle.core namespace and should have doc-strings describing them. Use (doc) from leiningen's REPL judiciously.
