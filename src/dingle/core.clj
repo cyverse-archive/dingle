@@ -6,7 +6,9 @@
         [slingshot.slingshot :only [try+ throw+]])
   (:require [clojure.string :as string]
             [clojure.java.io :as io]
-            [clojure-commons.file-utils :as ft]))
+            [clojure-commons.file-utils :as ft]
+            [dingle.rpms :as rpms]
+            [clojure.set :as set]))
 
 (defn err
   [err-str]
@@ -115,4 +117,47 @@
     (report-all (execute (clean)))
     (doseq [repo repos]
       (tagging-workflow repo))))
+
+(defn list-latest-rpms
+  "Lists the filename of the latest version of the RPMs in the :rpm-names
+   list in the config.
+
+   Params:
+     host - The host to connect to to do the listing. String.
+     port - The port to connect on. Integer.
+     user - The user to connect as. String.
+     rpm-dir - The config key of the directory to look in on the remote machine
+
+   Returns a list of the RPM filenames."
+  [rpm-dir]
+  (let [full-dir (ft/path-join (:rpm-base-dir @config) (get @config rpm-dir))
+        host     (:rpm-host @config)
+        port     (:rpm-host-port @config)
+        user     (:rpm-host-user @config)]
+    (mapv 
+      #(rpms/latest-rpm host port user %1 full-dir)
+      (:rpm-names @config))))
+
+(defn new-qa-rpms
+  "Returns a sequence of hash-maps telling which RPMs would be copied to QA
+   if you to run (push-rpms-to-qa)."
+  []
+  (let [dev-dir (ft/path-join (:rpm-base-dir @config) 
+                              (:rpm-dev-dir @config))
+        qa-dir  (ft/path-join (:rpm-base-dir @config)
+                              (:rpm-qa-dir @config))
+        host    (:rpm-host @config)
+        port    (:rpm-host-port @config)
+        user    (:rpm-host-user @config)]
+    (into [] 
+      (set/difference 
+        (set (list-latest-rpms :rpm-dev-dir))
+        (set (list-latest-rpms :rpm-qa-dir))))))
+
+(defn print-new-qa-rpms
+  "Convenience function that will print off the filenames of the RPMs that
+   would be pushed to QA if you were to run (push-rpms-to-qa)."
+  []
+  (doseq [rpm-map (new-qa-rpms)]
+    (println (rpms/rpm-map->rpm-name rpm-map))))
 

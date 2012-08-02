@@ -1,6 +1,7 @@
 (ns dingle.rpms
   (:use [dingle.scripting])
-  (:require [clojure.string :as string]))
+  (:require [clojure.string :as string]
+            [clojure-commons.file-utils :as ft]))
 
 (defn exec-list-rpms
   "Uses (remote-execute) to return a listing of RPM information from yum-path."
@@ -142,4 +143,4 @@
     (sudo-cmd
       (chain
         (createrepo "--update" ~repo-dir)
-        (chmod "-R" ~user-groups ~repo-dir)))))
+        (chown "-R" ~user-groups ~repo-dir)))))
