@@ -23,8 +23,35 @@ Create a file at ~/.dingle/config.clj. It should look like the following
     :ssh-password "<your ssh password>"
     :sudo-password "<your sudo password>"
     :github-base-url "git@github.com:iPlantCollaborativeOpenSource/"
+    
     :jenkins-url "<your jenkins url>"
     :jenkins-token "<your jenkins token>"
+
+    :rpm-host "<hostname of machine hosting rpms>"
+    :rpm-host-port <integer port to connect to rpm-host on>
+    :rpm-host-user "<your rpm-host user>"
+    :rpm-base-dir "<base directory containing rpm repos>"
+    :rpm-dev-dir "<relative path to the dev repo>"
+    :rpm-qa-dir "<relative path to the qa repo>"
+    :rpm-stage-dir "<relative path to the stage repo>"
+    :rpm-prod-dir "<relative path to the prod repo>"
+  
+    :rpm-names ["conrad"
+                "donkey"
+                "metadactyl"
+                "porklock"
+                "iplant-email"
+                "iplant-service-config"
+                "jex"
+                "iplant-ncl"
+                "nibblonian"
+                "notificationagent"
+                "osm"
+                "panopticon"
+                "scruffian"
+                "iplant-zoidberg"
+                "iplant-clavin"
+                "facepalm"]
     
     :prereq-repos  ["clj-jargon.git"
                     "iplant-clojure-commons.git"]
