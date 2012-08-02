@@ -140,6 +140,6 @@
     port
     user
     (sudo-cmd
-      (scriptify
+      (chain
         (createrepo "--update" ~repo-dir)
         (chmod "-R" ~user-groups ~repo-dir)))))
