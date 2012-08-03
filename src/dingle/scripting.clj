@@ -7,7 +7,7 @@
 
 (defn tmpfile
   []
-  (doto (java.io.File/createTempFile "pre" ".suff") .deleteOnExit))
+  (doto (java.io.File/createTempFile "iplant" ".sh") .deleteOnExit))
 
 (defn clj-execute
   [& scripts]
