@@ -43,14 +43,15 @@
   (let [script-dir (script-directory working-dir)] 
     (chain
       (cd ~script-dir)
-      (python26 "export-tool.py" 
-                "-p" ~de-port 
-                "-h" ~de-host
-                "-s" ~source))))
+      (screen "-dmS" "export-tool" 
+              "python2.6" "export-tool.py" 
+              "-p" ~de-port 
+              "-h" ~de-host
+              "-s" ~source))))
 
 (defn script-run-import-tool
   "Non-execing script that will run the import-tool.py. Assumes 
-   (script-setup-rpm) and (script-run-export-tool) has already been run.
+   (script-setup-scm) and (script-run-export-tool) has already been run.
 
    Params:
       working-dir - Path to the directory where scm was untarred. String.
@@ -61,8 +62,49 @@
   (let [script-dir (script-directory working-dir)]
     (chain
       (cd ~script-dir)
-      (python26 "import-tool.py"
-                "-p" ~de-port
-                "-h" ~de-host
-                "-v" ~dest))))
+      (screen "-dmS" "import-tool" 
+              "python2.6" "import-tool.py"
+              "-p" ~de-port
+              "-h" ~de-host
+              "-v" ~dest))))
+
+(defn script-run-export-tool
+  "Non-execing script that will run export-analyses.py. Assumes
+   (script-setup-scm has already been run.
+
+   Params:
+     working-dir - Path to the directory where scm was untarred. String.
+     de-host - Source DE deployment hostname. String.
+     de-port - Source DE deployment port. String.
+     dest - Destination DE version. String.
+
+   Returns a bash script in a string."
+  [working-dir de-host de-port dest]
+  (let [script-dir (script-directory working-dir)]
+    (chain
+      (cd ~script-dir)
+      (screen "-dmS" "export-analyses"
+              "python2.6" "export-analyses.py"
+              "-p" ~de-port
+              "-h" ~de-host
+              "-d" ~dest))))
+
+(defn script-run-import-analyses
+  "Non-execing script that will run import-analyses.py. Assumes
+   (script-setup-scm) has already been run.
+
+   Params:
+     working-dir - Path to the directory where scm was untarred. String.
+     de-host - Source DE deployment hostname. String.
+     de-port - Source DE deployment port. String.
+     dest - Destination DE version. String."
+  [working-dir de-host de-port dest]
+  (let [script-dir (script-directory working-dir)]
+    (chain
+      (cd ~script-dir)
+      (screen "-dmS" "import-analyses"
+              "python2.6" "import-analyses.py"
+              "-p" ~de-port
+              "-h" ~de-host
+              "-d" ~dest))))
 
