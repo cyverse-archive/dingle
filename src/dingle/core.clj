@@ -174,7 +174,7 @@
                                 (:rpm-qa-dir @config))]
     (report-all
       (mapv
-        #(rpms/copy-rpms host port user sudo-pass % dev-dir qa-dir)
+        #(rpms/copy-rpm host port user sudo-pass % dev-dir qa-dir)
         (new-qa-rpms)))
     
     (report-all 
