@@ -2,7 +2,19 @@
   (:use [pallet.stevedore]
         [clj-ssh.ssh])
   (:require [pallet.common.shell :as sh]
+            [clojure.java.shell :as clj-sh]
             [pallet.stevedore.bash :as bash]))
+
+(defn tmpfile
+  []
+  (doto (java.io.File/createTempFile "pre" ".suff") .deleteOnExit))
+
+(defn clj-execute
+  [& scripts]
+  (for [scr scripts]
+    (let [tmpf (tmpfile)]
+      (spit tmpf scr)
+      (clj-sh/sh "bash" (.getAbsolutePath tmpf)))))
 
 (defn execute
   [& scripts]
