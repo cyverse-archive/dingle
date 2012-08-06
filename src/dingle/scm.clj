@@ -43,8 +43,7 @@
   (let [script-dir (script-directory working-dir)] 
     (chain
       (cd ~script-dir)
-      (screen "-dmS" "export-tool" 
-              "python2.6" "export-tool.py" 
+      (python2.6 "export-tool.py" 
               "-p" ~de-port 
               "-h" ~de-host
               "-s" ~source))))
@@ -62,13 +61,12 @@
   (let [script-dir (script-directory working-dir)]
     (chain
       (cd ~script-dir)
-      (screen "-dmS" "import-tool" 
-              "python2.6" "import-tool.py"
+      (python2.6 "import-tool.py"
               "-p" ~de-port
               "-h" ~de-host
               "-v" ~dest))))
 
-(defn script-run-export-tool
+(defn script-run-export-analyses
   "Non-execing script that will run export-analyses.py. Assumes
    (script-setup-scm has already been run.
 
@@ -83,8 +81,7 @@
   (let [script-dir (script-directory working-dir)]
     (chain
       (cd ~script-dir)
-      (screen "-dmS" "export-analyses"
-              "python2.6" "export-analyses.py"
+      (python2.6 "export-analyses.py"
               "-p" ~de-port
               "-h" ~de-host
               "-d" ~dest))))
@@ -102,9 +99,8 @@
   (let [script-dir (script-directory working-dir)]
     (chain
       (cd ~script-dir)
-      (screen "-dmS" "import-analyses"
-              "python2.6" "import-analyses.py"
-              "-p" ~de-port
-              "-h" ~de-host
-              "-d" ~dest))))
+      (python2.6 "import-analyses.py"
+                 "-p" ~de-port
+                 "-h" ~de-host
+                 "-d" ~dest))))
 

@@ -181,6 +181,12 @@
     (report-all 
       (rpms/createrepo host port user sudo-pass qa-dir "root:www"))))
 
+(defn setup-scm
+  "Downloads and extracts the scm bundle into the working directory."
+  [scm-url]
+  (clj-execute
+    (script-setup-scm scm-url (:scm-working-dir @config))))
+
 (defn run-export-tool
   "Runs export tools from the latest built scm tarball against a deployed 
    version of the DE.
@@ -192,21 +198,43 @@
    Params:
      scm-url - Full URL to the scm tarball to use.
      source - Version of the source DE."
-  [scm-url source]
-  (let [de-host     (:de-host @config)
-        de-port     (:de-port @config)
-        working-dir (:scm-working-dir @config)]
-    (clj-execute
-      (script-setup-scm scm-url working-dir)
-      (script-run-export-tool working-dir de-host de-port source))))
+  [source]
+  (future
+    (let [de-host     (:de-host @config)
+          de-port     (:de-port @config)
+          working-dir (:scm-working-dir @config)]
+      (clj-execute
+        (script-run-export-tool working-dir de-host de-port source)))))
 
 (defn run-import-tool
   "Runs import-tools.py from the latest built scm tarball against a
    deployed version of the DE."
   [dest]
-  (let [de-host     (:de-host @config)
-        de-port     (:de-port @config)
-        working-dir (:scm-working-dir @config)] 
-    (clj-execute
-      (script-run-import-tool working-dir de-host de-port dest))))
+  (future
+    (let [de-host     (:de-host @config)
+          de-port     (:de-port @config)
+          working-dir (:scm-working-dir @config)] 
+      (clj-execute
+        (script-run-import-tool working-dir de-host de-port dest)))))
+
+(defn run-export-analyses
+  "Runs export-analyses.py from the latest built scm tarball against a
+   deployed version of the DE."
+  [dest]
+  (future
+    (let [de-host     (:de-host @config)
+          de-port     (:de-port @config)
+          working-dir (:scm-working-dir @config)] 
+      (clj-execute
+        (script-run-export-analyses working-dir de-host de-port dest)))))
+
+(defn run-import-analyses
+  "Runs import-analyses.py against a deployed version of the DE."
+  [dest]
+  (future
+    (let [de-host     (:de-host @config)
+          de-port     (:de-port @config)
+          working-dir (:scm-working-dir @config)] 
+      (clj-execute
+        (script-run-import-analyses working-dir de-host de-port dest)))))
 
