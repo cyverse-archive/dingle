@@ -123,7 +123,8 @@
       user
       (sudo-cmd
         (scriptify
-          (cp ~rpm-from ~to-dir))))))
+          (cp ~rpm-from ~to-dir))
+        sudo-pass))))
 
 (defn createrepo
   "Runs createrepo on a directory on the remote machine.
@@ -135,12 +136,23 @@
      sudo-pass - Sudo password for the user on the remote machine. String.
      repo-dir - Repo directory. Full-path string.
      user-groups - String containing the user:group to pass to chmod."
+  [host port user sudo-pass repo-dir]
+  (remote-execute
+    host
+    port
+    user
+    (sudo-cmd
+      (scriptify
+        (createrepo "--update" ~repo-dir))
+      sudo-pass)))
+
+(defn chown-remote-dir
   [host port user sudo-pass repo-dir user-groups]
   (remote-execute
     host
     port
     user
     (sudo-cmd
-      (chain
-        (createrepo "--update" ~repo-dir)
-        (chown "-R" ~user-groups ~repo-dir)))))
+      (scriptify
+        (chown "-R" ~user-groups ~repo-dir))
+      sudo-pass)))

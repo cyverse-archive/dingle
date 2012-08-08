@@ -185,22 +185,36 @@
 
 (defn copy-rpms-to-qa
   "Copies new RPMs to QA and updates the yum repository."
+  ([]
+    (copy-rpms-to-qa (new-qa-rpms)))
+  ([rpm-list]
+    (let [host      (:rpm-host @config)
+          port      (:rpm-host-port @config)
+          user      (:rpm-host-user @config)
+          sudo-pass (:sudo-password @config)
+          dev-dir   (ft/path-join (:rpm-base-dir @config) 
+                                  (:rpm-dev-dir @config))
+          qa-dir    (ft/path-join (:rpm-base-dir @config)
+                                  (:rpm-qa-dir @config))]
+      (mapv
+        #(rpms/copy-rpm host port user sudo-pass % dev-dir qa-dir)
+        rpm-list))))
+
+(defn create-qa-repo
   []
   (let [host      (:rpm-host @config)
         port      (:rpm-host-port @config)
         user      (:rpm-host-user @config)
-        sudo-pass (:sudo-pass @config)
+        sudo-pass (:sudo-password @config)
         dev-dir   (ft/path-join (:rpm-base-dir @config) 
                                 (:rpm-dev-dir @config))
         qa-dir    (ft/path-join (:rpm-base-dir @config)
-                                (:rpm-qa-dir @config))]
-    (report-all
-      (mapv
-        #(rpms/copy-rpm host port user sudo-pass % dev-dir qa-dir)
-        (new-qa-rpms)))
-    
+                                (:rpm-qa-dir @config))] 
     (report-all 
-      (rpms/createrepo host port user sudo-pass qa-dir "root:www"))))
+      (rpms/createrepo host port user sudo-pass qa-dir))
+    
+    (report-all
+      (rpms/chown-remote-dir host port user sudo-pass qa-dir "root:www"))))
 
 (defn setup-scm
   "Downloads and extracts the scm bundle into the working directory."
