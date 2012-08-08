@@ -77,47 +77,68 @@
       (:ssh-user @config)
       (apply yu-part (:list-of-services @config)))))
 
+(defn merge-workflow
+  [repo]
+  (execute
+    (git-clone repo)
+    (git-checkout repo "master")
+    (git-merge repo "master" "remotes/origin/dev")
+    (git-push repo)))
+
 (defn tagging-workflow
   "Checks out the repo, merges the dev branch into master, pushes up the 
    merged changes, tags the repo with the value in tag, and finally
    pushes up the tags."
   [repo tag]
   (execute
-    (git-clone repo)
-    (git-checkout repo "master")
-    (git-merge repo "master" "dev")
-    (git-push repo)
     (git-tag repo tag)
     (git-push-tags repo)))
 
-(defn merge-and-tag-prereqs
+(defn update-tag-workflow
+  [repo tag]
+  (execute
+    (git-update-tag repo tag)))
+
+(defn merge-prereqs
+  []
+  (for [repo (mapv full-repo-string (:prereq-repos @config))]
+    (merge-workflow repo)))
+
+(defn tag-prereqs
   [tag]
-  (doseq [repo (mapv full-repo-string (:prereq-repos @config))]
-    (report-all (tagging-workflow repo tag))))
+  (for [repo (mapv full-repo-string (:prereq-repos @config))]
+    (tagging-workflow repo tag)))
 
 (defn build-prereqs
   "Build the prereq jobs."
   []
-  (doseq [job (:prereq-jobs @config)]
-    (report-all 
-      (trigger-job 
-        (:jenkins-url @config)
-        job
-        (:jenkins-token @config)))))
+  (for [job (:prereq-jobs @config)]
+    (trigger-job 
+      (:jenkins-url @config)
+      job
+      (:jenkins-token @config))))
 
-(defn merge-and-tag-repos
-  "If passed only a tag, then it calls (tagging-workflow) on each of the
-   repos in list-of-repos.
-
-   If passed a tag and a list of repos, then it calls (tagging-workflow)
-   on each of the repos passed in. You'll need to map full-repo-string
-   on the list of repos that you pass in (or use full git repo URLs)."
+(defn update-tag
   ([tag]
-    (merge-and-tag-repos tag (mapv full-repo-string (:list-of-repos @config))))
+    (update-tag tag (mapv full-repo-string (:list-of-repos @config))))
   ([tag repos]
-    (report-all (execute (clean)))
-    (doseq [repo repos]
-      (tagging-workflow repo))))
+    (for [repo repos]
+      (update-tag-workflow repo tag))))
+
+(defn merge-repos
+  ([]
+    (merge-repos (mapv full-repo-string (:list-of-repos @config))))
+  ([repos]
+    (execute (clean))
+    (for [repo repos]
+      (merge-workflow repo))))
+
+(defn tag-repos
+  ([tag]
+    (tag-repos tag (mapv full-repo-string (:list-of-repos @config))))
+  ([tag repos]
+    (for [repo repos]
+      (tagging-workflow repo tag))))
 
 (defn list-latest-rpms
   "Lists the filename of the latest version of the RPMs in the :rpm-names
@@ -159,8 +180,8 @@
   "Convenience function that will print off the filenames of the RPMs that
    would be pushed to QA if you were to run (push-rpms-to-qa)."
   []
-  (doseq [rpm-map (new-qa-rpms)]
-    (println (rpms/rpm-map->rpm-name rpm-map))))
+  (for [rpm-map (new-qa-rpms)]
+    (rpms/rpm-map->rpm-name rpm-map)))
 
 (defn copy-rpms-to-qa
   "Copies new RPMs to QA and updates the yum repository."

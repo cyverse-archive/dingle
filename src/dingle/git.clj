@@ -79,5 +79,15 @@
       (git push --tags)
       (popd))))
 
+(defn git-update-tag
+  [repo tag]
+  (let [repo-dir (repo->dirname repo)]
+    (scriptify
+      (echo "Executing delete-tag")
+      (pushd ~repo-dir)
+      (git tag -f ~tag)
+      (git push --tags)
+      (popd))))
+
 
 
