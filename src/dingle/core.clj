@@ -160,28 +160,32 @@
       #(rpms/latest-rpm host port user %1 full-dir)
       (:rpm-names @config))))
 
-(defn new-qa-rpms
-  "Returns a sequence of hash-maps telling which RPMs would be copied to QA
-   if you to run (push-rpms-to-qa)."
-  []
+(defn new-repo-rpms
+  [rpm-source-dir rpm-dest-dir]
   (let [dev-dir (ft/path-join (:rpm-base-dir @config) 
-                              (:rpm-dev-dir @config))
+                              (rpm-source-dir @config))
         qa-dir  (ft/path-join (:rpm-base-dir @config)
-                              (:rpm-qa-dir @config))
+                              (rpm-dest-dir @config))
         host    (:rpm-host @config)
         port    (:rpm-host-port @config)
         user    (:rpm-host-user @config)]
     (into [] 
       (set/difference 
-        (set (list-latest-rpms :rpm-dev-dir))
-        (set (list-latest-rpms :rpm-qa-dir))))))
+        (set (list-latest-rpms rpm-source-dir))
+        (set (list-latest-rpms rpm-dest-dir))))))
 
-(defn print-new-qa-rpms
-  "Convenience function that will print off the filenames of the RPMs that
-   would be pushed to QA if you were to run (push-rpms-to-qa)."
-  []
-  (for [rpm-map (new-qa-rpms)]
+(defn new-qa-rpms [] (new-repo-rpms :rpm-dev-dir :rpm-qa-dir))
+(defn new-stage-rpms [] (new-repo-rpms :rpm-qa-dir :rpm-stage-dir))
+(defn new-prod-rpms [] (new-repo-rpms :rpm-stage-dir :rpm-prod-dir))
+
+(defn print-new-rpms
+  [new-rpm-fn]
+  (for [rpm-map (new-rpm-fn)]
     (rpms/rpm-map->rpm-name rpm-map)))
+
+(defn print-new-qa-rpms [] (print-new-rpms new-qa-rpms))
+(defn print-new-stage-rpms [] (print-new-rpms new-stage-rpms))
+(defn print-new-prod-rpms [] (print-new-rpms new-prod-rpms))
 
 (defn copy-rpms-to-qa
   "Copies new RPMs to QA and updates the yum repository."
@@ -272,4 +276,3 @@
           working-dir (:scm-working-dir @config)] 
       (clj-execute
         (script-run-import-analyses working-dir de-host de-port dest)))))
-
