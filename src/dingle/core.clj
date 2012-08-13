@@ -187,38 +187,41 @@
 (defn print-new-stage-rpms [] (print-new-rpms new-stage-rpms))
 (defn print-new-prod-rpms [] (print-new-rpms new-prod-rpms))
 
-(defn copy-rpms-to-qa
-  "Copies new RPMs to QA and updates the yum repository."
-  ([]
-    (copy-rpms-to-qa (new-qa-rpms)))
-  ([rpm-list]
-    (let [host      (:rpm-host @config)
-          port      (:rpm-host-port @config)
-          user      (:rpm-host-user @config)
-          sudo-pass (:sudo-password @config)
-          dev-dir   (ft/path-join (:rpm-base-dir @config) 
-                                  (:rpm-dev-dir @config))
-          qa-dir    (ft/path-join (:rpm-base-dir @config)
-                                  (:rpm-qa-dir @config))]
-      (mapv
-        #(rpms/copy-rpm host port user sudo-pass % dev-dir qa-dir)
-        rpm-list))))
-
-(defn create-qa-repo
-  []
+(defn copy-rpms
+  [rpm-list from-dir-sym to-dir-sym]
   (let [host      (:rpm-host @config)
         port      (:rpm-host-port @config)
         user      (:rpm-host-user @config)
         sudo-pass (:sudo-password @config)
-        dev-dir   (ft/path-join (:rpm-base-dir @config) 
-                                (:rpm-dev-dir @config))
-        qa-dir    (ft/path-join (:rpm-base-dir @config)
-                                (:rpm-qa-dir @config))] 
+        from-dir   (ft/path-join (:rpm-base-dir @config) 
+                                (from-dir-sym @config))
+        to-dir    (ft/path-join (:rpm-base-dir @config)
+                                (to-dir-sym @config))]
+    (mapv
+     #(rpms/copy-rpm host port user sudo-pass % from-dir to-dir)
+     rpm-list)))
+
+(defn copy-rpms-to-qa [] (copy-rpms (new-qa-rpms) :rpm-dev-dir :rpm-qa-dir))
+(defn copy-rpms-to-stage [] (copy-rpms (new-stage-rpms) :rpm-qa-dir :rpm-stage-dir))
+(defn copy-rpms-to-prod [] (copy-rpms (new-prod-rpms) :rpm-stage-dir :rpm-prod-dir))
+
+(defn update-yum-repo
+  [rpm-dir]
+  (let [host      (:rpm-host @config)
+        port      (:rpm-host-port @config)
+        user      (:rpm-host-user @config)
+        sudo-pass (:sudo-password @config)
+        work-dir  (ft/path-join (:rpm-base-dir @config)
+                                (rpm-dir @config))] 
     (report-all 
-      (rpms/createrepo host port user sudo-pass qa-dir))
+      (rpms/createrepo host port user sudo-pass work-dir))
     
     (report-all
-      (rpms/chown-remote-dir host port user sudo-pass qa-dir "root:www"))))
+      (rpms/chown-remote-dir host port user sudo-pass work-dir "root:www"))))
+
+(defn update-qa-repo [] (update-yum-repo :rpm-qa-dir))
+(defn update-stage-repo [] (update-yum-repo :rpm-stage-dir))
+(defn update-prod-repo [] (update-yum-repo :rpm-prod-dir))
 
 (defn setup-scm
   "Downloads and extracts the scm bundle into the working directory."
