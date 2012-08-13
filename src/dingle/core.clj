@@ -23,9 +23,9 @@
     (throw+ (err (str "Config " config-file " doesn't exist."))))
   
   (try+
-    (load-file config-file)
-    (catch Exception e
-      (throw (Exception. "Error loading config file."))))
+   (load-file config-file)
+   (catch Exception e
+     (throw (Exception. "Error loading config file."))))
   
   (let [config (resolve 'dingle.config/config)]
     (when-not config
@@ -34,10 +34,10 @@
 
 (defn configure
   ([]
-    (configure (ft/path-join (System/getProperty "user.home") ".dingle/config.clj")))
+     (configure (ft/path-join (System/getProperty "user.home") ".dingle/config.clj")))
   ([config-file]
-    (reset! config @(load-configuration config-file))
-    nil))
+     (reset! config @(load-configuration config-file))
+     nil))
 
 (defn full-repo-string
   "Prepends git URL to the name of the repo. Use with list-of-repos."
@@ -62,28 +62,28 @@
   "Restarts the backend services, one-by-one"
   [host port]
   (remote-execute 
-    host 
-    port 
-    (:ssh-user @config)
-    (service-restart "iplant-services" (:sudo-password @config))))
+   host 
+   port 
+   (:ssh-user @config)
+   (service-restart "iplant-services" (:sudo-password @config))))
 
 (defn update-services
   "Updates the backend service."
   [host port]
   (let [yu-part (partial yum-update (:sudo-password @config))] 
     (remote-execute
-      host
-      port
-      (:ssh-user @config)
-      (apply yu-part (:list-of-services @config)))))
+     host
+     port
+     (:ssh-user @config)
+     (apply yu-part (:list-of-services @config)))))
 
 (defn merge-workflow
   [repo]
   (execute
-    (git-clone repo)
-    (git-checkout repo "master")
-    (git-merge repo "master" "remotes/origin/dev")
-    (git-push repo)))
+   (git-clone repo)
+   (git-checkout repo "master")
+   (git-merge repo "master" "remotes/origin/dev")
+   (git-push repo)))
 
 (defn tagging-workflow
   "Checks out the repo, merges the dev branch into master, pushes up the 
@@ -91,13 +91,13 @@
    pushes up the tags."
   [repo tag]
   (execute
-    (git-tag repo tag)
-    (git-push-tags repo)))
+   (git-tag repo tag)
+   (git-push-tags repo)))
 
 (defn update-tag-workflow
   [repo tag]
   (execute
-    (git-update-tag repo tag)))
+   (git-update-tag repo tag)))
 
 (defn merge-prereqs
   []
@@ -114,31 +114,31 @@
   []
   (for [job (:prereq-jobs @config)]
     (trigger-job 
-      (:jenkins-url @config)
-      job
-      (:jenkins-token @config))))
+     (:jenkins-url @config)
+     job
+     (:jenkins-token @config))))
 
 (defn update-tag
   ([tag]
-    (update-tag tag (mapv full-repo-string (:list-of-repos @config))))
+     (update-tag tag (mapv full-repo-string (:list-of-repos @config))))
   ([tag repos]
-    (for [repo repos]
-      (update-tag-workflow repo tag))))
+     (for [repo repos]
+       (update-tag-workflow repo tag))))
 
 (defn merge-repos
   ([]
-    (merge-repos (mapv full-repo-string (:list-of-repos @config))))
+     (merge-repos (mapv full-repo-string (:list-of-repos @config))))
   ([repos]
-    (execute (clean))
-    (for [repo repos]
-      (merge-workflow repo))))
+     (execute (clean))
+     (for [repo repos]
+       (merge-workflow repo))))
 
 (defn tag-repos
   ([tag]
-    (tag-repos tag (mapv full-repo-string (:list-of-repos @config))))
+     (tag-repos tag (mapv full-repo-string (:list-of-repos @config))))
   ([tag repos]
-    (for [repo repos]
-      (tagging-workflow repo tag))))
+     (for [repo repos]
+       (tagging-workflow repo tag))))
 
 (defn list-latest-rpms
   "Lists the filename of the latest version of the RPMs in the :rpm-names
@@ -157,8 +157,8 @@
         port     (:rpm-host-port @config)
         user     (:rpm-host-user @config)]
     (mapv 
-      #(rpms/latest-rpm host port user %1 full-dir)
-      (:rpm-names @config))))
+     #(rpms/latest-rpm host port user %1 full-dir)
+     (:rpm-names @config))))
 
 (defn new-repo-rpms
   [rpm-source-dir rpm-dest-dir]
@@ -170,9 +170,9 @@
         port    (:rpm-host-port @config)
         user    (:rpm-host-user @config)]
     (into [] 
-      (set/difference 
-        (set (list-latest-rpms rpm-source-dir))
-        (set (list-latest-rpms rpm-dest-dir))))))
+          (set/difference 
+           (set (list-latest-rpms rpm-source-dir))
+           (set (list-latest-rpms rpm-dest-dir))))))
 
 (defn new-qa-rpms [] (new-repo-rpms :rpm-dev-dir :rpm-qa-dir))
 (defn new-stage-rpms [] (new-repo-rpms :rpm-qa-dir :rpm-stage-dir))
@@ -194,7 +194,7 @@
         user      (:rpm-host-user @config)
         sudo-pass (:sudo-password @config)
         from-dir   (ft/path-join (:rpm-base-dir @config) 
-                                (from-dir-sym @config))
+                                 (from-dir-sym @config))
         to-dir    (ft/path-join (:rpm-base-dir @config)
                                 (to-dir-sym @config))]
     (mapv
@@ -214,10 +214,10 @@
         work-dir  (ft/path-join (:rpm-base-dir @config)
                                 (rpm-dir @config))] 
     (report-all 
-      (rpms/createrepo host port user sudo-pass work-dir))
+     (rpms/createrepo host port user sudo-pass work-dir))
     
     (report-all
-      (rpms/chown-remote-dir host port user sudo-pass work-dir "root:www"))))
+     (rpms/chown-remote-dir host port user sudo-pass work-dir "root:www"))))
 
 (defn update-qa-repo [] (update-yum-repo :rpm-qa-dir))
 (defn update-stage-repo [] (update-yum-repo :rpm-stage-dir))
@@ -227,7 +227,7 @@
   "Downloads and extracts the scm bundle into the working directory."
   [scm-url]
   (clj-execute
-    (script-setup-scm scm-url (:scm-working-dir @config))))
+   (script-setup-scm scm-url (:scm-working-dir @config))))
 
 (defn run-export-tool
   "Runs export tools from the latest built scm tarball against a deployed 
@@ -246,36 +246,33 @@
           de-port     (:de-port @config)
           working-dir (:scm-working-dir @config)]
       (clj-execute
-        (script-run-export-tool working-dir de-host de-port source)))))
+       (script-run-export-tool working-dir de-host de-port source)))))
 
 (defn run-import-tool
   "Runs import-tools.py from the latest built scm tarball against a
    deployed version of the DE."
   [dest]
-  (future
-    (let [de-host     (:de-host @config)
-          de-port     (:de-port @config)
-          working-dir (:scm-working-dir @config)] 
-      (clj-execute
-        (script-run-import-tool working-dir de-host de-port dest)))))
+  (let [de-host     (:de-host @config)
+        de-port     (:de-port @config)
+        working-dir (:scm-working-dir @config)] 
+    (clj-execute
+     (script-run-import-tool working-dir de-host de-port dest))))
 
 (defn run-export-analyses
   "Runs export-analyses.py from the latest built scm tarball against a
    deployed version of the DE."
   [dest]
-  (future
-    (let [de-host     (:de-host @config)
-          de-port     (:de-port @config)
-          working-dir (:scm-working-dir @config)] 
-      (clj-execute
-        (script-run-export-analyses working-dir de-host de-port dest)))))
+  (let [de-host     (:de-host @config)
+        de-port     (:de-port @config)
+        working-dir (:scm-working-dir @config)] 
+    (clj-execute
+     (script-run-export-analyses working-dir de-host de-port dest))))
 
 (defn run-import-analyses
   "Runs import-analyses.py against a deployed version of the DE."
   [dest]
-  (future
-    (let [de-host     (:de-host @config)
-          de-port     (:de-port @config)
-          working-dir (:scm-working-dir @config)] 
-      (clj-execute
-        (script-run-import-analyses working-dir de-host de-port dest)))))
+  (let [de-host     (:de-host @config)
+        de-port     (:de-port @config)
+        working-dir (:scm-working-dir @config)] 
+    (clj-execute
+     (script-run-import-analyses working-dir de-host de-port dest))))
