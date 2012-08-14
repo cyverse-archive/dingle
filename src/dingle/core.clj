@@ -29,12 +29,15 @@
   
   (let [config (resolve 'dingle.config/config)]
     (when-not config
-      (throw+ (err (str "Couldn't resolve 'dingle.config/config from " config-file))))
+      (throw+
+       (err
+        (str "Couldn't resolve 'dingle.config/config from " config-file))))
     config))
 
 (defn configure
   ([]
-     (configure (ft/path-join (System/getProperty "user.home") ".dingle/config.clj")))
+     (configure
+      (ft/path-join (System/getProperty "user.home") ".dingle/config.clj")))
   ([config-file]
      (reset! config @(load-configuration config-file))
      nil))
@@ -174,18 +177,50 @@
            (set (list-latest-rpms rpm-source-dir))
            (set (list-latest-rpms rpm-dest-dir))))))
 
-(defn new-qa-rpms [] (new-repo-rpms :rpm-dev-dir :rpm-qa-dir))
-(defn new-stage-rpms [] (new-repo-rpms :rpm-qa-dir :rpm-stage-dir))
-(defn new-prod-rpms [] (new-repo-rpms :rpm-stage-dir :rpm-prod-dir))
+(defn new-qa-rpms
+  "Returns a list of rpm maps representing the rpms that are in the dev repo
+   but aren't in the qa rpm repo. You shouldn't need to call this directly
+   unless you're doing some debugging."
+  []
+  (new-repo-rpms :rpm-dev-dir :rpm-qa-dir))
+
+(defn new-stage-rpms
+  "Returns a list of rpm maps representing the rpms that are in the qa repo
+   but aren't in the stage rpm repo. You shouldn't need to call this directly
+   unless you're doing some debugging."
+  []
+  (new-repo-rpms :rpm-qa-dir :rpm-stage-dir))
+
+(defn new-prod-rpms
+  "Returns a list of rpm maps representing the rpms that are in the stage repo
+   but aren't in the prod rpm repo. You shouldn't need to call this directly
+   unless you're doing some debugging."
+  []
+  (new-repo-rpms :rpm-stage-dir :rpm-prod-dir))
 
 (defn print-new-rpms
   [new-rpm-fn]
-  (for [rpm-map (new-rpm-fn)]
-    (rpms/rpm-map->rpm-name rpm-map)))
+  (doseq [rpm-name (for [rpm-map (new-rpm-fn)]
+                     (rpms/rpm-map->rpm-name rpm-map))]
+    (println rpm-name)))
 
-(defn print-new-qa-rpms [] (print-new-rpms new-qa-rpms))
-(defn print-new-stage-rpms [] (print-new-rpms new-stage-rpms))
-(defn print-new-prod-rpms [] (print-new-rpms new-prod-rpms))
+(defn print-new-qa-rpms
+  "Prints off a list of RPMs that are in the dev yum repo but aren't in the QA
+   yum repo. You should run this before copying the RPMs over."
+  []
+  (print-new-rpms new-qa-rpms))
+
+(defn print-new-stage-rpms
+  "Prints off a list of RPMs that are in the QA RPMs directory but aren't in the
+   Stage RPM directory. You should run this before copying the RPMs over."
+  []
+  (print-new-rpms new-stage-rpms))
+
+(defn print-new-prod-rpms
+  "Prints off a list of RPMs that are in the Stage RPMs directory but aren't in
+   the Prod RPM directory. You should run this before copying the RPMs over."
+  []
+  (print-new-rpms new-prod-rpms))
 
 (defn copy-rpms
   [rpm-list from-dir-sym to-dir-sym]
@@ -201,9 +236,23 @@
      #(rpms/copy-rpm host port user sudo-pass % from-dir to-dir)
      rpm-list)))
 
-(defn copy-rpms-to-qa [] (copy-rpms (new-qa-rpms) :rpm-dev-dir :rpm-qa-dir))
-(defn copy-rpms-to-stage [] (copy-rpms (new-stage-rpms) :rpm-qa-dir :rpm-stage-dir))
-(defn copy-rpms-to-prod [] (copy-rpms (new-prod-rpms) :rpm-stage-dir :rpm-prod-dir))
+(defn copy-rpms-to-qa
+  "Copies the RPMs that are in the Dev RPM directory but aren't in the QA RPM
+   directory over to the QA RPM directory."
+  []
+  (copy-rpms (new-qa-rpms) :rpm-dev-dir :rpm-qa-dir))
+
+(defn copy-rpms-to-stage
+  "Copies the RPMs that are in the QA RPM directory but aren't in the Stage RPM
+   directory over to the Stage RPM directory."
+  []
+  (copy-rpms (new-stage-rpms) :rpm-qa-dir :rpm-stage-dir))
+
+(defn copy-rpms-to-prod
+  "Copies the RPMs that are in the Stage RPM directory but aren't in the Prod
+   RPM directory over to the Prod RPM directory."
+  []
+  (copy-rpms (new-prod-rpms) :rpm-stage-dir :rpm-prod-dir))
 
 (defn update-yum-repo
   [rpm-dir]
@@ -219,9 +268,20 @@
     (report-all
      (rpms/chown-remote-dir host port user sudo-pass work-dir "root:www"))))
 
-(defn update-qa-repo [] (update-yum-repo :rpm-qa-dir))
-(defn update-stage-repo [] (update-yum-repo :rpm-stage-dir))
-(defn update-prod-repo [] (update-yum-repo :rpm-prod-dir))
+(defn update-qa-repo
+  "Run's 'createrepo --update' on the QA yum repo."
+  []
+  (update-yum-repo :rpm-qa-dir))
+
+(defn update-stage-repo
+  "Run's 'createrepo --update' on the Stage yum repo."
+  []
+  (update-yum-repo :rpm-stage-dir))
+
+(defn update-prod-repo
+  "Run's 'createrepo --update' on the Prod yum repo."
+  []
+  (update-yum-repo :rpm-prod-dir))
 
 (defn setup-scm
   "Downloads and extracts the scm bundle into the working directory."
