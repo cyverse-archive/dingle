@@ -9,9 +9,12 @@
                  [org.cloudhoist/stevedore "0.7.2"]
                  [clj-ssh "0.4.0"]
                  [slingshot "0.10.1"]
-                 [com.cemerick/url "0.0.6"]]
+                 [com.cemerick/url "0.0.6"]
+                 [org.eclipse.jgit/org.eclipse.jgit "2.0.0.201206130900-r"]]
   :repositories {"sonatype"
-                 "http://oss.sonatype.org/content/repositories/releases"}
+                 "http://oss.sonatype.org/content/repositories/releases"
+                 "jgit-repo"
+                 "http://download.eclipse.org/jgit/maven"}
   :aot [dingle.core]
   :main dingle.core
   :min-lein-version "2.0.0")
