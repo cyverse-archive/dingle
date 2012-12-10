@@ -35,6 +35,15 @@ Create a file at ~/.dingle/config.clj. It should look like the following
     :rpm-qa-dir "<relative path to the qa repo>"
     :rpm-stage-dir "<relative path to the stage repo>"
     :rpm-prod-dir "<relative path to the prod repo>"
+
+    :yum-host "host-subscribed-to-repos"
+    :yum-port "22"
+    :yum-user "a-user"
+
+    :yum-dev-repo "dev"
+    :yum-qa-repo "qa"
+    :yum-uat-repo "stage"
+    :yum-prod-repo "prod"
   
     :rpm-names ["conrad"
                 "donkey"
