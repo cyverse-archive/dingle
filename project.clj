@@ -5,7 +5,7 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [org.clojure/tools.cli "0.2.1"]
-                 [org.iplantc/clojure-commons "1.2.0-SNAPSHOT"]
+                 [org.iplantc/clojure-commons "1.3.0-SNAPSHOT"]
                  [org.cloudhoist/stevedore "0.7.2"]
                  [clj-ssh "0.4.0"]
                  [slingshot "0.10.1"]
