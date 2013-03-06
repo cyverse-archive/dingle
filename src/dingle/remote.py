@@ -77,3 +77,31 @@ def new_rpms_for_prod():
     """Returns a list containing the RPM filenames that are in the stage
     directory but aren't in the prod directory"""
     return list(set(stage_fs_rpms()) - set((prod_fs_rpms())))
+
+def copy_remote_files(flist, rsource, rdest, run_func=ops.sudo):
+    """Copies the filenames included in 'flist' from the remote source
+    directory 'rsource' into the remote destination directory
+    'rdest'. Requires sudo access."""
+    cmd_string = ""
+    for fname in flist:
+        src_fpath = os.path.join(rsource, fname)
+        copy_cmd = "cp %(src)s %(dest)s; " % \
+                   {"src" : src_fpath, "dest" : rdest}
+        cmd_string = cmd_string + copy_cmd
+    return run_func(cmd_string)
+
+def update_yum_repo(repo_path, run_func=ops.sudo):
+    """Runs 'createrepo --update' on the path passed in."""
+    return run_func("createrepo --update " + repo_path)
+
+def chown(fpath, owner_group, recurse=False, run_func=ops.sudo):
+    """Runs 'chown' on a path. owner_group must be in the format that
+    the chown command accepts. If recurse is True, then a -R will be
+    added to the chown command."""
+    cmd_str = "chown "
+    if recurse:
+        cmd_str = cmd_str + "-R "
+    cmd_str = cmd_str + owner_group + " "
+    cmd_str = cmd_str + fpath
+    return run_func(cmd_str)
+

@@ -85,3 +85,30 @@ def test_new_rpms_for_prod():
 
     remote.stage_fs_rpms = old_val
 
+def test_copy_remote_files():
+    """Test for copy_remote_files()"""
+    flist = ["one.txt", "two.txt", "three.txt"]
+    runner = lambda x: x
+    src = "/source"
+    dest = "/dest/"
+    assert remote.copy_remote_files(flist, src, dest, run_func=runner) == \
+    "cp /source/one.txt /dest/; " + \
+    "cp /source/two.txt /dest/; " + \
+    "cp /source/three.txt /dest/; "
+
+def test_update_yum_repo():
+    """Test for update_yum_repo()"""
+    runner = lambda x: x
+    assert remote.update_yum_repo("/foo/bar", run_func=runner) == \
+    "createrepo --update /foo/bar"
+
+def test_chown():
+    """Test for chown()"""
+    runner = lambda x: x
+    fpath = "/src"
+    ogr = "owner:group"
+    assert remote.chown(fpath, ogr, run_func=runner) == "chown owner:group /src"
+    assert remote.chown(fpath, ogr, recurse=True, run_func=runner) == \
+        "chown -R owner:group /src"
+    assert remote
+
