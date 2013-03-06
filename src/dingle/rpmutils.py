@@ -31,7 +31,8 @@ def sort_rpms(rpm_filenames):
 
 def latest_rpms(rpm_filenames):
     """Returns a list of RPM filenames representing only the latest
-    versions of the rpms in the list."""
+    versions of the rpms in the list. RPMs in the list that is returned
+    are sorted by filename."""
     rpm_map = {}
 
     for fname in rpm_filenames:
@@ -41,8 +42,6 @@ def latest_rpms(rpm_filenames):
         rpm_map[rpm_name].append(fname)
 
     for key, val in rpm_map.items():
-        print key
-        print val
         rpm_map[key] = sort_rpms(val)[-1]
 
     return sorted(rpm_map.values())
