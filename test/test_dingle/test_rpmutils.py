@@ -35,3 +35,18 @@ def test_sort_rpms():
         "foo-2.0.0-1.n.rpm",
         "foo-3.0.0-1.n.rpm"
     ]
+
+def test_latest_rpms():
+    """Tests latest_rpms()"""
+    example = [
+        "foo-1.0.0-10.n.rpm",
+        "foo-1.0.0-9.n.rpm",
+        "foo-1.0.0-8.n.rpm",
+        "bar-2.1.0-1.n.rpm",
+        "bar-2.2.0-1.n.rpm",
+        "bar-2.2.1-1.n.rpm"
+    ]
+    assert rpmutils.latest_rpms(example) == [
+        "bar-2.2.1-1.n.rpm",
+        "foo-1.0.0-10.n.rpm"
+    ]
