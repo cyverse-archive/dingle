@@ -1,0 +1,12 @@
+{
+    "test1" : "this is a test",
+    "test2" : "this is a test2",
+    "test3" : [
+        "hooray1",
+        "hooray2"
+    ],
+    "list_of_repos" : [
+        "git@github.com:iPlantCollaborativeOpenSource/Fake.git",
+        "git@github.com:iPlantCollaborativeOpenSource/Fake2.git"
+    ]
+}
