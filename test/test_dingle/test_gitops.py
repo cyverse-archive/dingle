@@ -38,6 +38,8 @@ def test_git_clone():
     gitops.git_clone(repo, STAGE_DIR)
     ops.local.assert_any_call("git clone %s" % repo)
     assert os.getcwd() == orig_cwd
+    shutil.rmtree(STAGE_DIR)
+
 
 def test_dir_from_repo():
     """Tests dir_from_repo()"""
@@ -72,6 +74,8 @@ def test_git_merge():
     ops.local.assert_any_call("git merge %s" % frombranch)
     ops.local.assert_any_call("git push origin %s" % intobranch)
     assert os.getcwd() == orig_cwd
+    shutil.rmtree(STAGE_DIR)
+
 
 def test_git_tag():
     """Tests git_tag()"""
@@ -85,3 +89,5 @@ def test_git_tag():
     ops.local.assert_any_call("git tag -a '%s' -m '%s'" % (tag, tag))
     ops.local.assert_any_call("git push --tags")
     assert os.getcwd() == orig_cwd
+    shutil.rmtree(STAGE_DIR)
+
