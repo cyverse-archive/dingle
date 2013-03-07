@@ -6,9 +6,24 @@ import shutil
 import mock
 import fabric.operations as ops
 
-from dingle import gitops
+from dingle import gitops, config
+
+config.DingleConfig.configure("test/test_config.json")
 
 STAGE_DIR = "test/staging"
+
+class FakeReturn(object):
+    """Fake return value"""
+    def __init__(self, success=True):
+        self.succeeded = success
+
+    def ugh(self):
+        """fake method"""
+        pass
+
+    def asdfasd(self):
+        """shut up pylint"""
+        pass
 
 def test_create_local_staging():
     """Tests create_local_staging()"""
@@ -34,30 +49,16 @@ def test_git_clone():
     """Tests git_clone()"""
     repo = "git@github.com:iPlantCollaborativeOpenSource/fake.git"
     orig_cwd = os.getcwd()
-    ops.local = mock.Mock(return_value=True)
+    ops.local = mock.Mock(return_value=FakeReturn())
     gitops.git_clone(repo, STAGE_DIR)
     ops.local.assert_any_call("git clone %s" % repo)
     assert os.getcwd() == orig_cwd
     shutil.rmtree(STAGE_DIR)
 
-
 def test_dir_from_repo():
     """Tests dir_from_repo()"""
     repo = "git@github.com:toolong/fake.git"
     assert gitops.dir_from_repo(repo) == "fake"
-
-class FakeReturn(object):
-    """Fake return value"""
-    def __init__(self, success=True):
-        self.succeeded = success
-
-    def ugh(self):
-        """fake method"""
-        pass
-
-    def asdfasd(self):
-        """shut up pylint"""
-        pass
 
 def test_git_merge():
     """Tests git_merge()"""

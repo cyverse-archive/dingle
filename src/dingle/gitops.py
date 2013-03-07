@@ -5,6 +5,14 @@ import os.path
 import shutil
 import fabric.operations as ops
 
+class GitMergeError(Exception):
+    """Exception raised on merge errors."""
+    pass
+
+class GitCloneError(Exception):
+    """Exception raised on clone errors."""
+    pass
+
 def create_local_staging(staging_dir):
     """Creates a local directory at 'staging_dir'. If 'staging_dir'
     already exists, it's first deleted and then created."""
@@ -28,7 +36,9 @@ def git_clone(repository, staging_dir):
     orig_cwd = os.getcwd()
     try:
         use_staging_dir(staging_dir)
-        ops.local("git clone " + repository)
+        result = ops.local("git clone " + repository)
+        if not result.succeeded:
+            raise GitCloneError(repository)
     finally:
         os.chdir(orig_cwd)
 
@@ -51,9 +61,9 @@ def git_merge(frombranch, intobranch, repository, staging_dir):
         ops.local("git checkout %s" % intobranch)
         ops.local("git pull origin %s" % intobranch)
         result = ops.local("git merge %s" % frombranch)
-        print result
-        if result.succeeded:
-            ops.local("git push origin %s" % intobranch)
+        if not result.succeeded:
+            raise GitMergeError(repository)
+        ops.local("git push origin %s" % intobranch)
     finally:
         os.chdir(orig_cwd)
 

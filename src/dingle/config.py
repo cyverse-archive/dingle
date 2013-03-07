@@ -25,13 +25,18 @@ class MissingConfigValueError(DingleError):
 class DingleConfig:
     """Class representing the dingle config"""
 
+    config = None
+
     @staticmethod
     def configure(config_path):
         """Returns a map of configuration values by reading in
         'config_path' and parsing the JSON it contains."""
         if not os.path.exists(config_path):
             raise MissingConfigError(config_path)
-        return DingleConfig(json.load(open(config_path, 'r')))
+        if not DingleConfig.config:
+            filejson = json.load(open(config_path, 'r'))
+            DingleConfig.config = DingleConfig(filejson)
+        return DingleConfig.config
 
     def __init__(self, config):
         """Use configure() to create DingleConfig instances. 'config'

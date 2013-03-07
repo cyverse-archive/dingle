@@ -5,12 +5,13 @@ uploading, and copying RPMs and updating yum repositories.
 
 import os.path
 import fabric.operations as ops
+from dingle.config import DingleConfig
 
-BASE_DIR = "/home/vhosts/projects.iplantcollaborative.org/html/rpms/"
-DEV_RPMS_DIR = os.path.join(BASE_DIR, "dev/CentOS/5/iplant/x86_64/")
-QA_RPMS_DIR = os.path.join(BASE_DIR, "qa/CentOS/5/iplant/x86_64/")
-STAGE_RPMS_DIR = os.path.join(BASE_DIR, "stage/CentOS/5/iplant/x86_64/")
-PROD_RPMS_DIR = os.path.join(BASE_DIR, "prod/CentOS/5/iplant/x86_64/")
+CFG = DingleConfig.config
+DEV_RPMS_DIR = CFG.get('yum_dev_dir')
+QA_RPMS_DIR = CFG.get('yum_qa_dir')
+STAGE_RPMS_DIR = CFG.get('yum_stage_dir')
+PROD_RPMS_DIR = CFG.get('yum_prod_dir')
 
 def split_ls_output(run_output):
     """Separates the output of an 'ls' command (not 'ls -l') into a

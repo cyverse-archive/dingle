@@ -1,6 +1,8 @@
 """Runs unit tests for dingle.remote"""
 import mock
-from dingle import remote
+from dingle import remote, config
+
+config.DingleConfig.configure("test/test_config.json")
 
 RPMS = [
     "foo.rpm",
