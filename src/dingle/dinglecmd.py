@@ -13,39 +13,34 @@ def setup_args():
     group.add_argument(
         '-n',
         '--new-rpms',
-        type='string',
         action='store',
         choices=['qa', 'stage', 'prod'],
-        help="Lists the new rpms for the specified environment."
+        help='List new rpms for the specified environment.'
     )
     group.add_argument(
         '-m',
         '--merge',
-        type='string',
         action='store',
         choices=['prereqs', 'repos'],
-        help="Which set of repos to merge and tag. Requires --tag."
+        help="Set of repos to merge and tag. Requires --tag."
     )
     group.add_argument(
         '-u',
         '--update-yum-repo',
-        type='string',
         action='store',
         choices=['dev', 'qa', 'stage', 'prod'],
-        help="Which yum repo to update with new rpms."
+        help="Yum repo to update with new rpms."
     )
     group.add_argument(
         '-l',
         '--list-fs',
-        type='string',
         action='store',
         choices=['dev', 'qa', 'stage', 'prod'],
-        help="Which directory to list. Prints off only RPMS."
+        help="Directory to list. Prints off only RPMS."
     )
     parser.add_argument(
         '-c',
         '--config',
-        type='string',
         action='store',
         default='~/.dingle/dingle.json',
         help='Path to the dingle configuration file.'
@@ -53,9 +48,8 @@ def setup_args():
     parser.add_argument(
         '-t',
         '--tag',
-        type='string',
         action='store',
-        help='The tag to apply to a merge.'
+        help='Tag to apply to a merge.'
     )
     return parser
 
