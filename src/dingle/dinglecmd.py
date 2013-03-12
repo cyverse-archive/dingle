@@ -14,7 +14,7 @@ def setup_args():
         '-n',
         '--new-rpms',
         action='store',
-        choices=['qa', 'stage', 'prod'],
+        choices=['dev', 'qa', 'stage', 'prod'],
         help='List new rpms for the specified environment.'
     )
     group.add_argument(
@@ -83,23 +83,24 @@ def _validate_keys(cfg, cfg_path, keys):
 
 def _validate_types(cfg, cfg_path, typemap):
     """Validates the types of the values in 'cfg'"""
-    err_tmpl = "%s should be of type %s in %s.\n"
+    err_tmpl = "%s is of type %s and should be of type %s in %s.\n"
     err_str = ""
-    for cfg_key, cfg_type in typemap:
+    for cfg_key, cfg_type in typemap.iteritems():
         if not type(cfg.get(cfg_key)) is cfg_type:
-            err_str = err_str + err_tmpl % (cfg_key, cfg_type, cfg_path)
+            err_str = err_str + err_tmpl % \
+                (cfg_key, type(cfg.get(cfg_key)), cfg_type, cfg_path)
     if err_str:
         _err_exit(err_str)
 
 def _validate_config(cfg, cfg_path):
     """Validates the already parsed config file 'cfg'."""
     required_configs = {
-        "staging" : types.StringType,
-        "yum_repo_host" : types.StringType,
-        "yum_dev_dir" : types.StringType,
-        "yum_qa_dir" : types.StringType,
-        "yum_stage_dir" : types.StringType,
-        "yum_prod_dir" : types.StringType,
+        "staging_dir" : types.UnicodeType,
+        "yum_repo_host" : types.UnicodeType,
+        "yum_dev_dir" : types.UnicodeType,
+        "yum_qa_dir" : types.UnicodeType,
+        "yum_stage_dir" : types.UnicodeType,
+        "yum_prod_dir" : types.UnicodeType,
         "rpm_names" : types.ListType,
         "prereq_repos" : types.ListType,
         "list_of_repos" : types.ListType
@@ -154,13 +155,13 @@ def _handle_list_fs(settings):
     rpms = None
 
     if settings.list_fs == 'dev':
-        rpms = remote.list_dev_fs()
+        rpms = sorted(remote.dev_fs_rpms())
     elif settings.list_fs == 'qa':
-        rpms = remote.list_qa_fs()
+        rpms = sorted(remote.qa_fs_rpms())
     elif settings.list_fs == 'stage':
-        rpms = remote.list_stage_fs()
+        rpms = sorted(remote.stage_fs_rpms())
     else:
-        rpms = remote.list_prod_fs()
+        rpms = sorted(remote.prod_fs_rpms())
 
     print "-- RPM listing for the %s directory." % dirname
     for rpm in rpms:
