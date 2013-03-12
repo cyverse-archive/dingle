@@ -5,6 +5,9 @@ import sys
 import types
 import argparse
 from dingle import config, workflows, remote
+from fabric.api import env
+
+env.use_ssh_config = True
 
 def setup_args():
     """Defines the command-line interface"""
@@ -155,16 +158,16 @@ def _handle_list_fs(settings):
     rpms = None
 
     if settings.list_fs == 'dev':
-        rpms = sorted(remote.dev_fs_rpms())
+        rpms = remote.dev_fs_rpms()
     elif settings.list_fs == 'qa':
-        rpms = sorted(remote.qa_fs_rpms())
+        rpms = remote.qa_fs_rpms()
     elif settings.list_fs == 'stage':
-        rpms = sorted(remote.stage_fs_rpms())
+        rpms = remote.stage_fs_rpms()
     else:
-        rpms = sorted(remote.prod_fs_rpms())
+        rpms = remote.prod_fs_rpms()
 
     print "-- RPM listing for the %s directory." % dirname
-    for rpm in rpms:
+    for rpm in sorted(rpms):
         print rpm
 
 def execute():

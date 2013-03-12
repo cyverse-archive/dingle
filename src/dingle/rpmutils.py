@@ -2,6 +2,14 @@
 
 import operator
 
+def convert_version_element(version_string):
+    """Converts 'version_string' into an int if it doesn't contain
+    any non-digit characters. Otherwise, returns the original
+    string."""
+    if version_string.isdigit():
+        return int(version_string)
+    return version_string
+
 def get_version_list(rpm_filename):
     """Returns the version portion of an iPlant RPM filename as a list
     of integers. This will only work on RPMs that use the RPM version
@@ -9,10 +17,11 @@ def get_version_list(rpm_filename):
        {name}-#.#.#-##.{arch}.rpm
     The first three digits are the version fields. The last two digits
     are the release/build number."""
-    chunks = rpm_filename.split('-')[1:3]
+    rpm_filename = rpm_filename.strip(".rpm")
+    chunks = rpm_filename.split('-')[-2:]
     version_list = chunks[0].split('.')
     version_list.append(chunks[1].split('.')[0])
-    return [int(v) for v in version_list]
+    return [convert_version_element(v) for v in version_list]
 
 def get_rpm_name(rpm_filename):
     """Returns the name portion of an iPlant RPM filename. As with
