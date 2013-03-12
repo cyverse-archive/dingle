@@ -7,12 +7,6 @@ import os.path
 import fabric.operations as ops
 from dingle.config import DingleConfig
 
-CFG = DingleConfig.config
-DEV_RPMS_DIR = CFG.get('yum_dev_dir')
-QA_RPMS_DIR = CFG.get('yum_qa_dir')
-STAGE_RPMS_DIR = CFG.get('yum_stage_dir')
-PROD_RPMS_DIR = CFG.get('yum_prod_dir')
-
 def split_ls_output(run_output):
     """Separates the output of an 'ls' command (not 'ls -l') into a
     flattened list of entries.
@@ -29,19 +23,19 @@ def list_fs(fs_dir):
 
 def list_dev_fs():
     """Lists the contents of the dev RPM directory."""
-    return list_fs(DEV_RPMS_DIR)
+    return list_fs(DingleConfig.config.get('yum_dev_dir'))
 
 def list_qa_fs():
     """Lists the contents of the qa RPM directory."""
-    return list_fs(QA_RPMS_DIR)
+    return list_fs(DingleConfig.config.get('yum_qa_dir'))
 
 def list_stage_fs():
     """Lists the contents of the stage RPM directory."""
-    return list_fs(STAGE_RPMS_DIR)
+    return list_fs(DingleConfig.config.get('yum_stage_dir'))
 
 def list_prod_fs():
     """Lists the contents of the prod RPM directory."""
-    return list_fs(PROD_RPMS_DIR)
+    return list_fs(DingleConfig.config.get('yum_prod_dir'))
 
 def fs_rpms(list_fs_func):
     """Returns the RPM entries from the output of the provided listing
