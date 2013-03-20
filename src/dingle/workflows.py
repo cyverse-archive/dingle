@@ -49,23 +49,23 @@ def latest_new_prod_rpms():
     prod."""
     return latest_new_rpms(remote.new_rpms_for_prod)
 
-def copy_rpms_to_qa(cfg):
+def copy_rpms_to_qa(cfg, skips):
     """Copies the latest new rpms to QA"""
-    new_rpms = latest_new_qa_rpms()
+    new_rpms = rpmutils.filter_rpms(latest_new_qa_rpms(), skips)
     source = cfg.get('yum_dev_dir')
     dest = cfg.get('yum_qa_dir')
     return remote.copy_remote_files(new_rpms, source, dest)
 
-def copy_rpms_to_stage(cfg):
+def copy_rpms_to_stage(cfg, skips):
     """Copies the latest new rpms to stage"""
-    new_rpms = latest_new_stage_rpms()
+    new_rpms = rpmutils.filter_rpms(latest_new_stage_rpms(), skips)
     source = cfg.get('yum_qa_dir')
     dest = cfg.get('yum_stage_dir')
     return remote.copy_remote_files(new_rpms, source, dest)
 
-def copy_rpms_to_prod(cfg):
+def copy_rpms_to_prod(cfg, skips):
     """Copies the latest new rpms to prod"""
-    new_rpms = latest_new_prod_rpms()
+    new_rpms = rpmutils.filter_rpms(latest_new_prod_rpms(), skips)
     source = cfg.get('yum_stage_dir')
     dest = cfg.get('yum_prod_dir')
     return remote.copy_remote_files(new_rpms, source, dest)
