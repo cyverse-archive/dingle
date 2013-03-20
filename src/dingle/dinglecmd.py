@@ -158,15 +158,16 @@ def _handle_merge(cfg, settings):
 def _handle_update_yum_repo(cfg, settings):
     """Handles the --update-yum-repo option."""
     repo = settings.update_yum_repo
+    skips = settings.skip
 
     if repo == 'dev':
         workflows.update_dev_repo(cfg)
     elif repo == 'qa':
-        workflows.update_qa_repo(cfg)
+        workflows.update_qa_repo(cfg, skips)
     elif repo == 'stage':
-        workflows.update_stage_repo(cfg)
+        workflows.update_stage_repo(cfg, skips)
     else:
-        workflows.update_prod_repo(cfg)
+        workflows.update_prod_repo(cfg, skips)
 
 def _handle_list_fs(settings):
     """Handles the --list-fs option."""

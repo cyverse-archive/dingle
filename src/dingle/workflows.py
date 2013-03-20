@@ -76,23 +76,23 @@ def update_dev_repo(cfg):
     remote.update_yum_repo(devrepo)
     return remote.chown(devrepo, "buildnanny:www", recurse=True)
 
-def update_qa_repo(cfg):
+def update_qa_repo(cfg, skips):
     """Updates the QA repo"""
     qarepo = cfg.get('yum_qa_dir')
-    copy_rpms_to_qa(cfg)
+    copy_rpms_to_qa(cfg, skips)
     remote.update_yum_repo(qarepo)
     return remote.chown(qarepo, "root:www", recurse=True)
 
-def update_stage_repo(cfg):
+def update_stage_repo(cfg, skips):
     """Updates the stage repo"""
     stagerepo = cfg.get('yum_stage_dir')
-    copy_rpms_to_stage(cfg)
+    copy_rpms_to_stage(cfg, skips)
     remote.update_yum_repo(stagerepo)
     return remote.chown(stagerepo, "root:www", recurse=True)
 
-def update_prod_repo(cfg):
+def update_prod_repo(cfg, skips):
     """Updates the prod repo"""
     prodrepo = cfg.get('yum_prod_dir')
-    copy_rpms_to_prod(cfg)
+    copy_rpms_to_prod(cfg, skips)
     remote.update_yum_repo(prodrepo)
     return remote.chown(prodrepo, "root:www", recurse=True)
