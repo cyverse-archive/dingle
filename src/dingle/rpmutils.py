@@ -73,7 +73,6 @@ def filter_rpms(rpm_filenames, filtered):
     """Filter the list 'rpm_filenames' so that it doesn't contain any of
     the RPMs listed in the 'filtered' list."""
     retval = []
-    print "running filter_rpms: ", filtered
 
     for fname in rpm_filenames:
         if not fname in filtered and not get_rpm_name(fname) in filtered:
