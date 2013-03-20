@@ -25,23 +25,29 @@ def merge_and_tag_repos(tag, cfg):
     stage_dir = cfg.get('staging_dir')
     _merge_and_tag(tag, repos, stage_dir)
 
+def latest_new_rpms(lister_func):
+    """Returns the latest versions of RPMs in the return value from
+    'lister_func'."""
+    rpms, _, list_2 = lister_func()
+    return [rpm for rpm in rpms if not rpmutils.has_later_rpm(rpm, list_2)]
+
 def latest_dev_rpms():
     """Lists the latest versions of RPMs in the dev yum directory."""
     return rpmutils.latest_rpms(remote.dev_fs_rpms())
 
 def latest_new_qa_rpms():
     """List only the latest rpms in dev directory that aren't in QA"""
-    return rpmutils.latest_rpms(remote.new_rpms_for_qa())
+    return latest_new_rpms(remote.new_rpms_for_qa)
 
 def latest_new_stage_rpms():
     """List only the latest rpms in the QA directory that aren't in
     stage."""
-    return rpmutils.latest_rpms(remote.new_rpms_for_stage())
+    return latest_new_rpms(remote.new_rpms_for_stage)
 
 def latest_new_prod_rpms():
     """List only the latest rpms in the stage directory that aren't in
     prod."""
-    return rpmutils.latest_rpms(remote.new_rpms_for_prod())
+    return latest_new_rpms(remote.new_rpms_for_prod)
 
 def copy_rpms_to_qa(cfg):
     """Copies the latest new rpms to QA"""

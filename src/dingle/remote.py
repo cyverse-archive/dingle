@@ -58,20 +58,31 @@ def prod_fs_rpms():
     """Returns the RPM entries for a listing of the prod directory."""
     return fs_rpms(list_prod_fs)
 
+def new_rpms(rpm_func_1, rpm_func_2):
+    """Returns a tuple of containing the following:
+        * list of rpms that are in the retval of rpm_func_1() but aren't
+          int the retval of rpm_func_2().
+        * A listing of rpm_func_1()
+        * A listing of rpm_func_1()"""
+    listing_1 = rpm_func_1()
+    listing_2 = rpm_func_2()
+    new_list = list(set(listing_1) - set(listing_2))
+    return new_list, listing_1, listing_2
+
 def new_rpms_for_qa():
     """Returns a list containing the RPM filenames that are in the dev
     directory but aren't in the qa directory."""
-    return list(set(dev_fs_rpms()) - set(qa_fs_rpms()))
+    return new_rpms(dev_fs_rpms, qa_fs_rpms)
 
 def new_rpms_for_stage():
     """Returns a list containing the RPM filenames that are in the qa
     directory but aren't in the stage directory"""
-    return list(set(qa_fs_rpms()) - set(stage_fs_rpms()))
+    return new_rpms(qa_fs_rpms, stage_fs_rpms)
 
 def new_rpms_for_prod():
     """Returns a list containing the RPM filenames that are in the stage
     directory but aren't in the prod directory"""
-    return list(set(stage_fs_rpms()) - set((prod_fs_rpms())))
+    return new_rpms(stage_fs_rpms, prod_fs_rpms)
 
 def copy_remote_files(flist, rsource, rdest, run_func=ops.sudo):
     """Copies the filenames included in 'flist' from the remote source

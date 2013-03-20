@@ -52,3 +52,32 @@ def test_latest_rpms():
         "bar-2.2.1-1.n.rpm",
         "foo-1.0.0-10.n.rpm"
     ]
+
+def test_rpm_name_version_map():
+    """Tests rpm_name_version_map()"""
+    example = [
+        "foo-1.0.0-10.n.rpm",
+        "foo-1.0.0-9.n.rpm",
+        "foo-1.0.0-8.n.rpm",
+        "bar-2.1.0-1.n.rpm",
+        "bar-2.2.0-1.n.rpm",
+        "bar-2.2.1-1.n.rpm"
+    ]
+    retval = rpmutils.rpm_name_version_map(example)
+    assert retval["foo"] == [[1, 0, 0, 10], [1, 0, 0, 9], [1, 0, 0, 8]]
+    assert retval["bar"] == [[2, 1, 0, 1], [2, 2, 0, 1], [2, 2, 1, 1]]
+
+def test_has_later_rpm():
+    """Test has_later_rpm()"""
+    example = [
+        "foo-1.0.0-10.n.rpm",
+        "foo-1.0.0-9.n.rpm",
+        "foo-1.0.0-8.n.rpm",
+        "bar-2.1.0-1.n.rpm",
+        "bar-2.2.0-1.n.rpm",
+        "bar-2.2.1-1.n.rpm"
+    ]
+    assert rpmutils.has_later_rpm("foo-1.0.0-7.n.rpm", example)
+    assert not rpmutils.has_later_rpm("foo-1.2.0-1.n.rpm", example)
+    assert rpmutils.has_later_rpm("bar-2.0.1-1.n.rpm", example)
+    assert not rpmutils.has_later_rpm("bar-2.2.2-1.n.rpm", example)

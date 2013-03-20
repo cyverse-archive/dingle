@@ -39,6 +39,36 @@ def sort_rpms(rpm_filenames):
     itemkey = operator.itemgetter(1)
     return [t[0] for t in sorted(rpm_map.iteritems(), key=itemkey)]
 
+def rpm_name_version_map(rpm_filenames):
+    """Returns a map where the keys are the rpm names and the value
+    is a list of version lists"""
+    rpm_map = {}
+    for fname in rpm_filenames:
+        rpm_name = get_rpm_name(fname)
+        rpm_version = get_version_list(fname)
+        if not rpm_map.has_key(rpm_name):
+            rpm_map[rpm_name] = []
+        rpm_map[rpm_name].append(rpm_version)
+    return rpm_map
+
+def has_later_rpm(rpm_filename, potential_later_rpms):
+    """Returns True if the rpm_map created with potential_later_rpms
+    (as returned by rpm_name_verison_map()) contains a version number
+    greater than the one in the rpm filename, 'rpm_filename'."""
+    retval = False
+    rpm_map = rpm_name_version_map(potential_later_rpms)
+    rpm_name = get_rpm_name(rpm_filename)
+    rpm_version = get_version_list(rpm_filename)
+
+    if not rpm_map.has_key(rpm_name):
+        return retval
+
+    for version_list in rpm_map[rpm_name]:
+        if version_list > rpm_version:
+            retval = True
+
+    return retval
+
 def latest_rpms(rpm_filenames):
     """Returns a list of RPM filenames representing only the latest
     versions of the rpms in the list. RPMs in the list that is returned

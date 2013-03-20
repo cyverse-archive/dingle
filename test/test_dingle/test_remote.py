@@ -65,7 +65,7 @@ def test_new_rpms_for_qa():
     old_val = remote.dev_fs_rpms
     remote.dev_fs_rpms = mock.Mock(return_value=PREV_STAGE_RPMS)
 
-    assert remote.new_rpms_for_qa() == NEW_RPMS
+    assert remote.new_rpms_for_qa()[0] == NEW_RPMS
 
     remote.dev_fs_rpms = old_val
 
@@ -74,7 +74,7 @@ def test_new_rpms_for_stage():
     old_val = remote.qa_fs_rpms
     remote.qa_fs_rpms = mock.Mock(return_value=PREV_STAGE_RPMS)
 
-    assert remote.new_rpms_for_stage() == NEW_RPMS
+    assert remote.new_rpms_for_stage()[0] == NEW_RPMS
 
     remote.qa_fs_rpms = old_val
 
@@ -83,7 +83,7 @@ def test_new_rpms_for_prod():
     old_val = remote.stage_fs_rpms
     remote.stage_fs_rpms = mock.Mock(return_value=PREV_STAGE_RPMS)
 
-    assert remote.new_rpms_for_prod() == NEW_RPMS
+    assert remote.new_rpms_for_prod()[0] == NEW_RPMS
 
     remote.stage_fs_rpms = old_val
 
