@@ -5,9 +5,10 @@ import sys
 import types
 import argparse
 from dingle import config, workflows, remote
-from fabric.api import env
+from fabric.api import env as _env
+from fabric.context_managers import settings as _settings
 
-env.use_ssh_config = True
+_env.use_ssh_config = True
 
 def setup_args():
     """Defines the command-line interface"""
@@ -53,6 +54,12 @@ def setup_args():
         '--tag',
         action='store',
         help='Tag to apply to a merge.'
+    )
+    parser.add_argument(
+        '--host',
+        action='store',
+        required=True,
+        help='The host (<user>@<hostname>:<port>) to connect to.'
     )
     return parser
 
@@ -178,14 +185,15 @@ def execute():
     cfg = config.DingleConfig.configure(settings.config)
     _validate_config(cfg, settings.config)
 
-    if settings.new_rpms:
-        _handle_new_rpms(settings)
-    elif settings.merge:
-        _handle_merge(cfg, settings)
-    elif settings.update_yum_repo:
-        _handle_update_yum_repo(cfg, settings)
-    else:
-        _handle_list_fs(settings)
+    with _settings(host_string=settings.host):
+        if settings.new_rpms:
+            _handle_new_rpms(settings)
+        elif settings.merge:
+            _handle_merge(cfg, settings)
+        elif settings.update_yum_repo:
+            _handle_update_yum_repo(cfg, settings)
+        else:
+            _handle_list_fs(settings)
 
 if __name__ == "__main__":
     execute()
