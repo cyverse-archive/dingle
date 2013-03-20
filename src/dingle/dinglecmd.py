@@ -4,7 +4,7 @@ import os.path
 import sys
 import types
 import argparse
-from dingle import config, workflows, remote
+from dingle import config, workflows, remote, rpmutils
 from fabric.api import env as _env
 from fabric.context_managers import settings as _settings
 
@@ -60,6 +60,12 @@ def setup_args():
         action='store',
         required=True,
         help='The host (<user>@<hostname>:<port>) to connect to.'
+    )
+    parser.add_argument(
+        '-s',
+        '--skip',
+        action='append',
+        help='Add an RPM name or RPM filename to a list of files to skip.'
     )
     return parser
 
@@ -134,7 +140,10 @@ def _handle_new_rpms(settings):
 
     print "-- RPMs for the %s environment:" % env
     if rpms:
-        for rpm in rpms:
+        if settings.skip:
+            rpms = rpmutils.filter_rpms(rpms, settings.skip)
+
+        for rpm in sorted(rpms):
             print rpm
 
 def _handle_merge(cfg, settings):
@@ -174,6 +183,10 @@ def _handle_list_fs(settings):
         rpms = remote.prod_fs_rpms()
 
     print "-- RPM listing for the %s directory." % dirname
+
+    if settings.skip:
+        rpms = rpmutils.filter_rpms(rpms, settings.skip)
+
     for rpm in sorted(rpms):
         print rpm
 

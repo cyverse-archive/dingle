@@ -69,6 +69,18 @@ def has_later_rpm(rpm_filename, potential_later_rpms):
 
     return retval
 
+def filter_rpms(rpm_filenames, filtered):
+    """Filter the list 'rpm_filenames' so that it doesn't contain any of
+    the RPMs listed in the 'filtered' list."""
+    retval = []
+    print "running filter_rpms: ", filtered
+
+    for fname in rpm_filenames:
+        if not fname in filtered and not get_rpm_name(fname) in filtered:
+            retval.append(fname)
+
+    return retval
+
 def latest_rpms(rpm_filenames):
     """Returns a list of RPM filenames representing only the latest
     versions of the rpms in the list. RPMs in the list that is returned
