@@ -27,7 +27,8 @@ def get_rpm_name(rpm_filename):
     """Returns the name portion of an iPlant RPM filename. As with
     get_version_list(), this will probably only work on RPMs that use
     the RPM naming convention for the DE RPMs."""
-    return rpm_filename.split('-')[0]
+    chunks = rpm_filename.split('-')[:-2]
+    return "-".join(chunks)
 
 def sort_rpms(rpm_filenames):
     """Returns a sorted list of RPM files based on version. Note that

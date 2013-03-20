@@ -11,7 +11,9 @@ def test_get_version_list():
 def test_get_rpm_name():
     """Tests get_rpm_name()"""
     example = "foo-1.0.0-10.noarch.rpm"
+    example2 = "iplant-clavin-1.0.0-10.noarch.rpm"
     assert rpmutils.get_rpm_name(example) == "foo"
+    assert rpmutils.get_rpm_name(example2) == "iplant-clavin"
 
 def test_sort_rpms():
     """Tests sort_rpms()"""
