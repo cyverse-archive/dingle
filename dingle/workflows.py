@@ -6,24 +6,26 @@ def _merge_and_tag(tag, repos, stage_dir):
     """Utility function that performs the clone, merge, and tag ops
     on the provided list of repos. You probably don't want to call this
     directly."""
+    retval = []
     for repo in repos:
-        gitops.git_clone(repo, stage_dir)
-        gitops.git_merge('dev', 'master', repo, stage_dir)
-        gitops.git_tag(tag, 'master', repo, stage_dir)
+        retval.append(gitops.git_clone(repo, stage_dir))
+        retval.append(gitops.git_merge('dev', 'master', repo, stage_dir))
+        retval.append(gitops.git_tag(tag, 'master', repo, stage_dir))
+    return retval
 
 def merge_and_tag_prereqs(tag, cfg):
     """Clones, merges, tags, and pushes the prereq repos defined in the
     config file as 'prereq-repos'."""
     prereq_repos = cfg.get('prereq_repos')
     stage_dir = cfg.get('staging_dir')
-    _merge_and_tag(tag, prereq_repos, stage_dir)
+    return _merge_and_tag(tag, prereq_repos, stage_dir)
 
 def merge_and_tag_repos(tag, cfg):
     """Clones, merges, tags, and pushes the prereq repos defined in the
     config file as 'list-of-repos'."""
     repos = cfg.get('list_of_repos')
     stage_dir = cfg.get('staging_dir')
-    _merge_and_tag(tag, repos, stage_dir)
+    return _merge_and_tag(tag, repos, stage_dir)
 
 def latest_new_rpms(lister_func):
     """Returns the latest versions of RPMs in the return value from

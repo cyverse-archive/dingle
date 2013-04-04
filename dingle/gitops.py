@@ -35,10 +35,11 @@ def git_clone(repository, staging_dir):
     back."""
     orig_cwd = os.getcwd()
     try:
+        retval = []
         use_staging_dir(staging_dir)
-        result = ops.local("git clone " + repository)
-        if not result.succeeded:
-            raise GitCloneError(repository)
+        cmd = "git clone " + repository
+        retval.append({cmd : ops.local(cmd)})
+        return retval
     finally:
         os.chdir(orig_cwd)
 
@@ -53,17 +54,21 @@ def git_merge(frombranch, intobranch, repository, staging_dir):
     'intobranch' branch if the merge succeeds."""
     orig_cwd = os.getcwd()
     try:
+        retval = []
+        cmds = [
+            "git checkout %s" % frombranch,
+            "git pull origin %s" % frombranch,
+            "git checkout %s" % intobranch,
+            "git pull origin %s" % intobranch,
+            "git merge %s" % frombranch,
+            "git push origin %s" % intobranch
+        ]
         repodir = dir_from_repo(repository)
         repopath = os.path.join(staging_dir, repodir)
         use_staging_dir(repopath)
-        ops.local("git checkout %s" % frombranch)
-        ops.local("git pull origin %s" % frombranch)
-        ops.local("git checkout %s" % intobranch)
-        ops.local("git pull origin %s" % intobranch)
-        result = ops.local("git merge %s" % frombranch)
-        if not result.succeeded:
-            raise GitMergeError(repository)
-        ops.local("git push origin %s" % intobranch)
+        for cmd in cmds:
+            retval.append({cmd : ops.local(cmd)})
+        return retval
     finally:
         os.chdir(orig_cwd)
 
@@ -73,10 +78,16 @@ def git_tag(tag, branch, repository, staging_dir):
     should already be cloned into 'staging_dir'."""
     orig_cwd = os.getcwd()
     try:
+        retval = []
         repodir = os.path.join(staging_dir, dir_from_repo(repository))
+        cmds = [
+            "git checkout %s" % branch,
+            "git tag -a '%s' -m '%s'" % (tag, tag),
+            "git push --tags"
+        ]
         use_staging_dir(repodir)
-        ops.local("git checkout %s" % branch)
-        ops.local("git tag -a '%s' -m '%s'" % (tag, tag))
-        ops.local("git push --tags")
+        for cmd in cmds:
+            retval.append({cmd : ops.local(cmd)})
+        return retval
     finally:
         os.chdir(orig_cwd)
