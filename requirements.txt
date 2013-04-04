@@ -6,4 +6,5 @@ nose==1.2.1
 paramiko==1.10.0
 pycrypto==2.6
 pylint==0.27.0
+web.py==0.37
 wsgiref==0.1.2
