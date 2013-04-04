@@ -29,7 +29,11 @@ def latest_new_rpms(lister_func):
     """Returns the latest versions of RPMs in the return value from
     'lister_func'."""
     rpms, _, list_2 = lister_func()
-    return [rpm for rpm in rpms if not rpmutils.has_later_rpm(rpm, list_2)]
+    return [
+        rpm for rpm in rpms \
+        if not rpmutils.has_later_rpm(rpm, list_2) \
+        and not rpmutils.has_later_rpm(rpm, rpms) \
+    ]
 
 def latest_dev_rpms():
     """Lists the latest versions of RPMs in the dev yum directory."""

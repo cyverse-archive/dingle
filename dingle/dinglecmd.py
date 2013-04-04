@@ -1,10 +1,9 @@
 """Contains the main section and parses command-line arguments."""
 
 import os.path
-import sys
-import types
 import argparse
 from dingle import config, workflows, remote, rpmutils
+from dingle.utils import err_exit
 from fabric.api import env as _env
 from fabric.context_managers import settings as _settings
 
@@ -69,11 +68,6 @@ def setup_args():
     )
     return parser
 
-def _err_exit(error_msg):
-    """Prints off an error message to stderr and exits."""
-    sys.stderr.write(error_msg + "\n")
-    sys.exit(-1)
-
 def parse_arguments(parser):
     """Parses the command-line with the specified parser and validates
     the options passed in. Returns the object containing the
@@ -81,48 +75,12 @@ def parse_arguments(parser):
     settings = parser.parse_args()
 
     if not os.path.exists(settings.config):
-        _err_exit("--config setting '%s' does not exist." % settings.config)
+        err_exit("--config setting '%s' does not exist." % settings.config)
 
     if settings.merge and not settings.tag:
-        _err_exit("--merge require --tag to be set.")
+        err_exit("--merge require --tag to be set.")
 
     return settings
-
-def _validate_keys(cfg, cfg_path, keys):
-    """Validates the keys in 'cfg'."""
-    missing_cfgs = cfg.missing_keys(keys)
-    if missing_cfgs:
-        err_str = "%s is missing the following settings:" % cfg_path
-        for missing_cfg in missing_cfgs:
-            err_str = err_str + "\t%s\n" % missing_cfg
-        _err_exit(err_str)
-
-def _validate_types(cfg, cfg_path, typemap):
-    """Validates the types of the values in 'cfg'"""
-    err_tmpl = "%s is of type %s and should be of type %s in %s.\n"
-    err_str = ""
-    for cfg_key, cfg_type in typemap.iteritems():
-        if not type(cfg.get(cfg_key)) is cfg_type:
-            err_str = err_str + err_tmpl % \
-                (cfg_key, type(cfg.get(cfg_key)), cfg_type, cfg_path)
-    if err_str:
-        _err_exit(err_str)
-
-def _validate_config(cfg, cfg_path):
-    """Validates the already parsed config file 'cfg'."""
-    required_configs = {
-        "staging_dir" : types.UnicodeType,
-        "yum_repo_host" : types.UnicodeType,
-        "yum_dev_dir" : types.UnicodeType,
-        "yum_qa_dir" : types.UnicodeType,
-        "yum_stage_dir" : types.UnicodeType,
-        "yum_prod_dir" : types.UnicodeType,
-        "rpm_names" : types.ListType,
-        "prereq_repos" : types.ListType,
-        "list_of_repos" : types.ListType
-    }
-    _validate_keys(cfg, cfg_path, required_configs.keys())
-    _validate_types(cfg, cfg_path, required_configs)
 
 def _handle_new_rpms(settings):
     """Handles the --new-rpms option."""
@@ -197,7 +155,7 @@ def execute():
     parser = setup_args()
     settings = parse_arguments(parser)
     cfg = config.DingleConfig.configure(settings.config)
-    _validate_config(cfg, settings.config)
+    cfg.validate_config()
 
     with _settings(host_string=settings.host):
         if settings.new_rpms:
