@@ -64,7 +64,8 @@ def setup_args():
         '-s',
         '--skip',
         action='append',
-        help='Add an RPM name or RPM filename to a list of files to skip.'
+        help='Add an RPM name or RPM filename to a list of files to skip.',
+        default=[]
     )
     return parser
 
@@ -82,9 +83,8 @@ def parse_arguments(parser):
 
     return settings
 
-def _handle_new_rpms(settings):
-    """Handles the --new-rpms option."""
-    env = settings.new_rpms
+def get_new_rpms(env, skips):
+    """Generalized new rpm_handler"""
     rpms = None
 
     if env == 'dev':
@@ -96,13 +96,32 @@ def _handle_new_rpms(settings):
     else:
         rpms = workflows.latest_new_prod_rpms()
 
-    print "-- RPMs for the %s environment:" % env
-    if rpms:
-        if settings.skip:
-            rpms = rpmutils.filter_rpms(rpms, settings.skip)
+    return sorted([rpm for rpm in rpmutils.filter_rpms(rpms, skips)])
 
-        for rpm in sorted(rpms):
-            print rpm
+def get_list_fs(dirname, skips):
+    """Generalized file system listing"""
+    rpms = None
+
+    if dirname == 'dev':
+        rpms = remote.dev_fs_rpms()
+    elif dirname == 'qa':
+        rpms = remote.qa_fs_rpms()
+    elif dirname == 'stage':
+        rpms = remote.stage_fs_rpms()
+    else:
+        rpms = remote.prod_fs_rpms()
+
+    return sorted([rpm for rpm in rpmutils.filter_rpms(rpms, skips)])
+
+def _handle_new_rpms(settings):
+    """Handles the --new-rpms option."""
+
+    env = settings.new_rpms
+    rpms = get_new_rpms(env, settings.skip)
+
+    print "-- RPMs for the %s environment:" % env
+    for rpm in rpms:
+        print rpm
 
 def _handle_merge(cfg, settings):
     """Handles the --merge option."""
@@ -130,23 +149,11 @@ def _handle_update_yum_repo(cfg, settings):
 def _handle_list_fs(settings):
     """Handles the --list-fs option."""
     dirname = settings.list_fs
-    rpms = None
-
-    if settings.list_fs == 'dev':
-        rpms = remote.dev_fs_rpms()
-    elif settings.list_fs == 'qa':
-        rpms = remote.qa_fs_rpms()
-    elif settings.list_fs == 'stage':
-        rpms = remote.stage_fs_rpms()
-    else:
-        rpms = remote.prod_fs_rpms()
+    rpms = get_list_fs(dirname, settings.skip)
 
     print "-- RPM listing for the %s directory." % dirname
 
-    if settings.skip:
-        rpms = rpmutils.filter_rpms(rpms, settings.skip)
-
-    for rpm in sorted(rpms):
+    for rpm in rpms:
         print rpm
 
 def execute():
