@@ -94,11 +94,12 @@ def copy_remote_files(flist, rsource, rdest, run_func=ops.sudo):
         copy_cmd = "cp %(src)s %(dest)s; " % \
                    {"src" : src_fpath, "dest" : rdest}
         cmd_string = cmd_string + copy_cmd
-    return run_func(cmd_string)
+    return [{cmd_string : run_func(cmd_string)}]
 
 def update_yum_repo(repo_path, run_func=ops.sudo):
     """Runs 'createrepo --update' on the path passed in."""
-    return run_func("createrepo --update " + repo_path)
+    cmd_str = "createrepo --update " + repo_path
+    return [{cmd_str : run_func(cmd_str)}]
 
 def chown(fpath, owner_group, recurse=False, run_func=ops.sudo):
     """Runs 'chown' on a path. owner_group must be in the format that
@@ -109,5 +110,5 @@ def chown(fpath, owner_group, recurse=False, run_func=ops.sudo):
         cmd_str = cmd_str + "-R "
     cmd_str = cmd_str + owner_group + " "
     cmd_str = cmd_str + fpath
-    return run_func(cmd_str)
+    return [{cmd_str : run_func(cmd_str)}]
 

@@ -78,23 +78,29 @@ def copy_rpms_to_prod(cfg, skips):
 
 def update_dev_repo(cfg):
     """Updates the dev repo"""
+    retval = []
     devrepo = cfg.get('yum_dev_dir')
-    remote.update_yum_repo(devrepo)
-    return remote.chown(devrepo, "buildnanny:www", recurse=True)
+    retval.append(remote.update_yum_repo(devrepo))
+    retval.append(remote.chown(devrepo, "buildnanny:www", recurse=True))
+    return retval
 
 def update_qa_repo(cfg, skips):
     """Updates the QA repo"""
+    retval = []
     qarepo = cfg.get('yum_qa_dir')
     copy_rpms_to_qa(cfg, skips)
-    remote.update_yum_repo(qarepo)
-    return remote.chown(qarepo, "root:www", recurse=True)
+    retval.append(remote.update_yum_repo(qarepo))
+    retval.append(remote.chown(qarepo, "root:www", recurse=True))
+    return retval
 
 def update_stage_repo(cfg, skips):
     """Updates the stage repo"""
+    retval = []
     stagerepo = cfg.get('yum_stage_dir')
     copy_rpms_to_stage(cfg, skips)
-    remote.update_yum_repo(stagerepo)
-    return remote.chown(stagerepo, "root:www", recurse=True)
+    retval.append(remote.update_yum_repo(stagerepo))
+    retval.append(remote.chown(stagerepo, "root:www", recurse=True))
+    return retval
 
 def update_prod_repo(cfg, skips):
     """Updates the prod repo"""

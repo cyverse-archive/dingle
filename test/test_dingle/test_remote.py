@@ -93,24 +93,26 @@ def test_copy_remote_files():
     runner = lambda x: x
     src = "/source"
     dest = "/dest/"
+    retval = "cp /source/one.txt /dest/; " + \
+             "cp /source/two.txt /dest/; " + \
+             "cp /source/three.txt /dest/; "
     assert remote.copy_remote_files(flist, src, dest, run_func=runner) == \
-    "cp /source/one.txt /dest/; " + \
-    "cp /source/two.txt /dest/; " + \
-    "cp /source/three.txt /dest/; "
+    [{retval : retval}]
 
 def test_update_yum_repo():
     """Test for update_yum_repo()"""
     runner = lambda x: x
     assert remote.update_yum_repo("/foo/bar", run_func=runner) == \
-    "createrepo --update /foo/bar"
+    [{"createrepo --update /foo/bar" : "createrepo --update /foo/bar"}]
 
 def test_chown():
     """Test for chown()"""
     runner = lambda x: x
     fpath = "/src"
     ogr = "owner:group"
-    assert remote.chown(fpath, ogr, run_func=runner) == "chown owner:group /src"
+    assert remote.chown(fpath, ogr, run_func=runner) == \
+    [{"chown owner:group /src" : "chown owner:group /src"}]
+
     assert remote.chown(fpath, ogr, recurse=True, run_func=runner) == \
-        "chown -R owner:group /src"
-    assert remote
+    [{"chown -R owner:group /src" : "chown -R owner:group /src"}]
 
