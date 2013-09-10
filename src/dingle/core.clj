@@ -88,6 +88,14 @@
    (git-merge repo "master" "remotes/origin/dev")
    (git-push repo)))
 
+(defn release-tag-workflow
+  [repo tag]
+  (execute
+    (git-clone repo)
+    (git-checkout repo "master")
+    (git-tag repo tag)
+    (git-push-tags repo)))
+
 (defn tagging-workflow
   "Checks out the repo, merges the dev branch into master, pushes up the 
    merged changes, tags the repo with the value in tag, and finally
@@ -111,6 +119,18 @@
   [tag]
   (for [repo (mapv full-repo-string (:prereq-repos @config))]
     (tagging-workflow repo tag)))
+
+(defn tag-prereqs-with-release
+  [tag]
+  (let [prereqs (mapv full-repo-string (:prereq-repos @config))
+        presult (for [prereq prereqs] (release-tag-workflow prereq tag))]
+    (clojure.pprint/pprint presult)))
+
+(defn tag-repos-with-release
+  [tag]
+  (let [repos   (mapv full-repo-string  (:list-of-repos @config))
+        rresult  (for  [repo repos]  (release-tag-workflow repo tag))]
+    (clojure.pprint/pprint rresult)))
 
 (defn build-prereqs
   "Build the prereq jobs."
