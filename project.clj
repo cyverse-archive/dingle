@@ -11,7 +11,10 @@
                  [slingshot "0.10.1"]
                  [com.cemerick/url "0.0.6"]]
   :repositories {"sonatype"
-                 "http://oss.sonatype.org/content/repositories/releases"}
+                 "http://oss.sonatype.org/content/repositories/releases"
+                 
+                 "iplantCollaborative"
+                 "http://projects.iplantcollaborative.org/archiva/repository/internal/"}
   :aot [dingle.core]
   :main dingle.core
   :min-lein-version "2.0.0")
