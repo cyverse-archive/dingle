@@ -1,8 +1,8 @@
 (ns dingle.jenkins
   (:use [dingle.scripting]
         [cemerick.url])
-  (:require [clojure-commons.file-utils :as ft]
-            [clojure.data.json :as json]))
+  (:require [cheshire.core :as cheshire]
+            [clojure-commons.file-utils :as ft]))
 
 (defn jenkins-job-url
   [jenkins-url job-name jenkins-token]
@@ -29,23 +29,25 @@
   [jenkins-url job-name]
   (let [full-jurl (jenkins-lastbuild-url jenkins-url job-name)]
     (:building
-      (json/read-json
-        (:out 
+      (cheshire/decode
+        (:out
           (first
             (execute
               (scriptify
-                (curl ~full-jurl)))))))))
+               (curl ~full-jurl)))))
+        true))))
 
 (defn queued?
   [jenkins-url job-name]
   (let [full-jurl (jenkins-job-api jenkins-url job-name)]
     (:inQueue
-      (json/read-json
+      (cheshire/decode
         (:out
           (first
             (execute
               (scriptify
-                (curl ~full-jurl)))))))))
+               (curl ~full-jurl)))))
+        true))))
 
 (defn building-or-queued?
   [jenkins-url job-name]

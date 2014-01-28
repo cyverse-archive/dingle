@@ -356,3 +356,33 @@
         working-dir (:scm-working-dir @config)] 
     (clj-execute
      (script-run-import-analyses working-dir de-host de-port dest))))
+
+(defn core-list-latest-rpms
+  [yum-repo]
+  (let [yum-host  (:yum-host @config)
+        yum-port  (:yum-port @config)
+        yum-user  (:yum-user @config)
+        rpm-names (:rpm-names @config)
+        all-rpms  (rpms/list-latest-rpms-in-repo yum-host yum-port yum-user yum-repo)]
+    (doseq [single-rpm all-rpms]
+      (println single-rpm))))
+
+(defn list-latest-rpms-in-dev [] (core-list-latest-rpms (:yum-dev-repo @config)))
+(defn list-latest-rpms-in-qa [] (core-list-latest-rpms (:yum-qa-repo @config)))
+(defn list-latest-rpms-in-uat [] (core-list-latest-rpms (:yum-uat-repo @config)))
+(defn list-latest-rpms-in-prod [] (core-list-latest-rpms (:yum-prod-repo @config)))
+
+(defn core-list-all-rpms
+  [yum-repo]
+  (let [yum-host  (:yum-host @config)
+        yum-port  (:yum-port @config)
+        yum-user  (:yum-user @config)
+        rpm-names (:rpm-names @config)
+        all-rpms  (rpms/list-all-rpms-in-repo yum-host yum-port yum-user yum-repo)]
+    (doseq [single-rpm all-rpms]
+      (println single-rpm))))
+
+(defn list-all-rpms-in-dev [] (core-list-all-rpms (:yum-dev-repo @config)))
+(defn list-all-rpms-in-qa [] (core-list-all-rpms (:yum-qa-repo @config)))
+(defn list-all-rpms-in-uat [] (core-list-all-rpms (:yum-uat-repo @config)))
+(defn list-all-rpms-in-prod [] (core-list-all-rpms (:yum-prod-repo @config)))

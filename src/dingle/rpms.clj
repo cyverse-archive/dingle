@@ -1,5 +1,6 @@
 (ns dingle.rpms
-  (:use [dingle.scripting])
+  (:use dingle.scripting
+        [slingshot.slingshot :only [try+ throw+]])
   (:require [clojure.string :as string]
             [clojure-commons.file-utils :as ft]))
 
@@ -156,3 +157,45 @@
       (scriptify
         (chown "-R" ~user-groups ~repo-dir))
       sudo-pass)))
+
+(defn latest-rpms-in-repo
+  "Lists the latest version of all RPMs that are in the specified repo."
+  [host port user repo-name]
+  (remote-execute
+   host
+   port
+   user
+   (scriptify
+    (list_packages_in_repo.py ~repo-name))))
+
+(defn list-latest-rpms-in-repo
+  "Runs (latest-rpms-in-repo) and parses the list into a vector of RPM filenames."
+  [host port user repo-name]
+  (let [cmd-output (first (latest-rpms-in-repo host port user repo-name))
+        yum-filter #(and (not (.startsWith % "Loading mirror"))
+                         (not (.startsWith % "Loaded plugins")))]
+    (if-not (= 0 (:exit cmd-output))
+      (throw+ cmd-output))
+
+    (filterv yum-filter (mapv string/trim (string/split (:out cmd-output) #"\n")))))
+
+(defn all-rpms-in-repo
+  "Lists all versions of all RPMs that are in the specified repo."
+  [host port user repo-name]
+  (remote-execute
+   host
+   port
+   user
+   (scriptify
+    (list_packages_in_repo.py "--all" ~repo-name))))
+
+(defn list-all-rpms-in-repo
+  "Runs (all-rpms-in-repo) and parses the list into a vector of RPM filenames."
+  [host port user repo-name]
+  (let [cmd-output (first (all-rpms-in-repo host port user repo-name))
+        yum-filter #(and (not (.startsWith % "Loading mirror"))
+                         (not (.startsWith % "Loaded plugins")))]
+    (if-not (= 0 (:exit cmd-output))
+      (throw+ cmd-output))
+
+    (filterv yum-filter (mapv string/trim (string/split (:out cmd-output) #"\n")))))
