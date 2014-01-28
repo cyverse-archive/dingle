@@ -1,5 +1,5 @@
 (ns dingle.core
-  (:use [dingle.scripting] 
+  (:use [dingle.scripting]
         [dingle.git]
         [dingle.services]
         [dingle.jenkins]
@@ -21,12 +21,12 @@
   [config-file]
   (when-not (.exists (io/file config-file))
     (throw+ (err (str "Config " config-file " doesn't exist."))))
-  
+
   (try+
    (load-file config-file)
    (catch Exception e
      (throw (Exception. "Error loading config file."))))
-  
+
   (let [config (resolve 'dingle.config/config)]
     (when-not config
       (throw+
@@ -64,16 +64,16 @@
 (defn restart-services
   "Restarts the backend services, one-by-one"
   [host port]
-  (remote-execute 
-   host 
-   port 
+  (remote-execute
+   host
+   port
    (:ssh-user @config)
    (service-restart "iplant-services" (:sudo-password @config))))
 
 (defn update-services
   "Updates the backend service."
   [host port]
-  (let [yu-part (partial yum-update (:sudo-password @config))] 
+  (let [yu-part (partial yum-update (:sudo-password @config))]
     (remote-execute
      host
      port
@@ -97,7 +97,7 @@
     (git-push-tags repo)))
 
 (defn tagging-workflow
-  "Checks out the repo, merges the dev branch into master, pushes up the 
+  "Checks out the repo, merges the dev branch into master, pushes up the
    merged changes, tags the repo with the value in tag, and finally
    pushes up the tags."
   [repo tag]
@@ -136,7 +136,7 @@
   "Build the prereq jobs."
   []
   (for [job (:prereq-jobs @config)]
-    (trigger-job 
+    (trigger-job
      (:jenkins-url @config)
      job
      (:jenkins-token @config))))
@@ -179,21 +179,21 @@
         host     (:rpm-host @config)
         port     (:rpm-host-port @config)
         user     (:rpm-host-user @config)]
-    (mapv 
+    (mapv
      #(rpms/latest-rpm host port user %1 full-dir)
      (:rpm-names @config))))
 
 (defn new-repo-rpms
   [rpm-source-dir rpm-dest-dir]
-  (let [dev-dir (ft/path-join (:rpm-base-dir @config) 
+  (let [dev-dir (ft/path-join (:rpm-base-dir @config)
                               (rpm-source-dir @config))
         qa-dir  (ft/path-join (:rpm-base-dir @config)
                               (rpm-dest-dir @config))
         host    (:rpm-host @config)
         port    (:rpm-host-port @config)
         user    (:rpm-host-user @config)]
-    (into [] 
-          (set/difference 
+    (into []
+          (set/difference
            (set (list-latest-rpms rpm-source-dir))
            (set (list-latest-rpms rpm-dest-dir))))))
 
@@ -248,7 +248,7 @@
         port      (:rpm-host-port @config)
         user      (:rpm-host-user @config)
         sudo-pass (:sudo-password @config)
-        from-dir   (ft/path-join (:rpm-base-dir @config) 
+        from-dir   (ft/path-join (:rpm-base-dir @config)
                                  (from-dir-sym @config))
         to-dir    (ft/path-join (:rpm-base-dir @config)
                                 (to-dir-sym @config))]
@@ -281,12 +281,12 @@
         user      (:rpm-host-user @config)
         sudo-pass (:sudo-password @config)
         work-dir  (ft/path-join (:rpm-base-dir @config)
-                                (rpm-dir @config))] 
-    (report-all 
-     (rpms/createrepo host port user sudo-pass work-dir))
-    
+                                (rpm-dir @config))]
     (report-all
-     (rpms/chown-remote-dir host port user sudo-pass work-dir "root:www"))))
+     (rpms/createrepo host port user sudo-pass work-dir))
+
+    (report-all
+     (rpms/chown-remote-dir host port user sudo-pass work-dir "buildnanny"))))
 
 (defn update-qa-repo
   "Run's 'createrepo --update' on the QA yum repo."
@@ -310,7 +310,7 @@
    (script-setup-scm scm-url (:scm-working-dir @config))))
 
 (defn run-export-tool
-  "Runs export tools from the latest built scm tarball against a deployed 
+  "Runs export tools from the latest built scm tarball against a deployed
    version of the DE.
 
    When this function exits, you should have a screen session named
@@ -334,7 +334,7 @@
   [dest]
   (let [de-host     (:de-host @config)
         de-port     (:de-port @config)
-        working-dir (:scm-working-dir @config)] 
+        working-dir (:scm-working-dir @config)]
     (clj-execute
      (script-run-import-tool working-dir de-host de-port dest))))
 
@@ -344,7 +344,7 @@
   [dest]
   (let [de-host     (:de-host @config)
         de-port     (:de-port @config)
-        working-dir (:scm-working-dir @config)] 
+        working-dir (:scm-working-dir @config)]
     (clj-execute
      (script-run-export-analyses working-dir de-host de-port dest))))
 
@@ -353,7 +353,7 @@
   [dest]
   (let [de-host     (:de-host @config)
         de-port     (:de-port @config)
-        working-dir (:scm-working-dir @config)] 
+        working-dir (:scm-working-dir @config)]
     (clj-execute
      (script-run-import-analyses working-dir de-host de-port dest))))
 
