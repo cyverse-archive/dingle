@@ -9,10 +9,10 @@
   [host port user rpm-name yum-path]
   (let [search-str   (str rpm-name "*.rpm")
         query-format "\"%{name}\\t%{version}\\t%{release}\\t%{arch}\\n\""
-        remote-exec  (comp :out first (partial remote-execute host port user))] 
-    (remote-exec 
-      (scriptify 
-        (cd ~yum-path) 
+        remote-exec  (comp :out first (partial remote-execute host port user))]
+    (remote-exec
+      (scriptify
+        (cd ~yum-path)
         (rpm -qp --qf ~query-format ~search-str)))))
 
 (defn list-rpms
@@ -41,10 +41,10 @@
   (let [rpm-listing (exec-list-rpms host port user rpm-name yum-path)]
     (mapv
       #(zipmap [:name :version :release :arch] (string/split % #"\t"))
-      (map 
-        string/trim 
-        (filter 
-          #(not (string/blank? %)) 
+      (map
+        string/trim
+        (filter
+          #(not (string/blank? %))
           (string/split rpm-listing #"\n"))))))
 
 (defn version-splitter
@@ -55,7 +55,7 @@
   "Is version a greater than version b? Maps should be in the format returned
    by (list-rpms)."
   [rpm1 rpm2]
-  (let [version1 (conj (version-splitter (:version rpm1)) 
+  (let [version1 (conj (version-splitter (:version rpm1))
                        (Integer/parseInt (:release rpm1)))
         version2 (conj (version-splitter (:version rpm2))
                        (Integer/parseInt (:release rpm2)))]
@@ -66,7 +66,7 @@
         (cond
           (and (not e1) e2)  false   ;e1 is shorter and is otherwise =
           (and (not e2) e1)  true    ;e2 is shorter and otherwise =
-          (and (not e1)              
+          (and (not e1)
                (not e2))     false   ;e1 and e1 are same length and =
           (> e1 e2)          true    ;e1 is > than e2
           (< e1 e2)          false   ;duh
@@ -94,14 +94,14 @@
 (defn rpm-map->rpm-name
   "Takes in a map representing an RPM and turns it into an RPM name."
   [rpm-map]
-  (str 
-    (:name rpm-map) 
-    "-" 
-    (:version rpm-map) 
-    "-" 
-    (:release rpm-map) 
-    "." 
-    (:arch rpm-map) 
+  (str
+    (:name rpm-map)
+    "-"
+    (:version rpm-map)
+    "-"
+    (:release rpm-map)
+    "."
+    (:arch rpm-map)
     ".rpm"))
 
 (defn copy-rpm
@@ -117,7 +117,7 @@
      to-dir - Directory to copy the RPM to. Full path. String."
   [host port user sudo-pass rpm-map from-dir to-dir]
   (let [rpm-filename (rpm-map->rpm-name rpm-map)
-        rpm-from     (ft/path-join from-dir rpm-filename)] 
+        rpm-from     (ft/path-join from-dir rpm-filename)]
     (remote-execute
       host
       port
@@ -142,10 +142,8 @@
     host
     port
     user
-    (sudo-cmd
-      (scriptify
-        (createrepo "--update" ~repo-dir))
-      sudo-pass)))
+    (scriptify
+        (createrepo "--update" ~repo-dir))))
 
 (defn chown-remote-dir
   [host port user sudo-pass repo-dir user-groups]
@@ -153,10 +151,8 @@
     host
     port
     user
-    (sudo-cmd
-      (scriptify
-        (chown "-R" ~user-groups ~repo-dir))
-      sudo-pass)))
+    (scriptify
+        (chown "-R" ~user-groups ~repo-dir))))
 
 (defn latest-rpms-in-repo
   "Lists the latest version of all RPMs that are in the specified repo."
