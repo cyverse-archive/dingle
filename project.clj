@@ -10,7 +10,7 @@
                  [clj-ssh "0.5.7"]
                  [slingshot "0.10.3"]
                  [com.cemerick/url "0.1.0"]
-                 [cheshire "5.0.1"]
+                 [cheshire "5.3.1"]
                  [org.eclipse.jgit/org.eclipse.jgit "2.0.0.201206130900-r"]]
   :repositories {"sonatype"
                  "http://oss.sonatype.org/content/repositories/releases"
