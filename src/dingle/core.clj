@@ -182,7 +182,8 @@
      (mapv
       #(hash-map (:name %1) (rpms/rpm-map->rpm-name %1))
       (list-latest-rpms dir-key)))
-     nil)}))
+     nil)}
+   {:pretty true}))
 
 (defn rpm-json-for-qa
   []
