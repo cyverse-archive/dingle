@@ -1,5 +1,5 @@
 (ns dingle.core
-  (:use [dingle.scripting] 
+  (:use [dingle.scripting]
         [dingle.git]
         [dingle.services]
         [dingle.jenkins]
@@ -7,6 +7,7 @@
         [slingshot.slingshot :only [try+ throw+]])
   (:require [clojure.string :as string]
             [clojure.java.io :as io]
+            [cheshire.core :as json]
             [clojure-commons.file-utils :as ft]
             [dingle.rpms :as rpms]
             [clojure.set :as set]))
@@ -21,12 +22,12 @@
   [config-file]
   (when-not (.exists (io/file config-file))
     (throw+ (err (str "Config " config-file " doesn't exist."))))
-  
+
   (try+
    (load-file config-file)
    (catch Exception e
      (throw (Exception. "Error loading config file."))))
-  
+
   (let [config (resolve 'dingle.config/config)]
     (when-not config
       (throw+
@@ -64,16 +65,16 @@
 (defn restart-services
   "Restarts the backend services, one-by-one"
   [host port]
-  (remote-execute 
-   host 
-   port 
+  (remote-execute
+   host
+   port
    (:ssh-user @config)
    (service-restart "iplant-services" (:sudo-password @config))))
 
 (defn update-services
   "Updates the backend service."
   [host port]
-  (let [yu-part (partial yum-update (:sudo-password @config))] 
+  (let [yu-part (partial yum-update (:sudo-password @config))]
     (remote-execute
      host
      port
@@ -89,7 +90,7 @@
    (git-push repo)))
 
 (defn tagging-workflow
-  "Checks out the repo, merges the dev branch into master, pushes up the 
+  "Checks out the repo, merges the dev branch into master, pushes up the
    merged changes, tags the repo with the value in tag, and finally
    pushes up the tags."
   [repo tag]
@@ -116,7 +117,7 @@
   "Build the prereq jobs."
   []
   (for [job (:prereq-jobs @config)]
-    (trigger-job 
+    (trigger-job
      (:jenkins-url @config)
      job
      (:jenkins-token @config))))
@@ -159,23 +160,41 @@
         host     (:rpm-host @config)
         port     (:rpm-host-port @config)
         user     (:rpm-host-user @config)]
-    (mapv 
+    (mapv
      #(rpms/latest-rpm host port user %1 full-dir)
      (:rpm-names @config))))
 
 (defn new-repo-rpms
   [rpm-source-dir rpm-dest-dir]
-  (let [dev-dir (ft/path-join (:rpm-base-dir @config) 
-                              (rpm-source-dir @config))
-        qa-dir  (ft/path-join (:rpm-base-dir @config)
-                              (rpm-dest-dir @config))
-        host    (:rpm-host @config)
-        port    (:rpm-host-port @config)
-        user    (:rpm-host-user @config)]
-    (into [] 
-          (set/difference 
-           (set (list-latest-rpms rpm-source-dir))
-           (set (list-latest-rpms rpm-dest-dir))))))
+  (into []
+    (set/difference
+      (set (list-latest-rpms rpm-source-dir))
+      (set (list-latest-rpms rpm-dest-dir)))))
+
+(defn rpm-json
+  "Returns a string containing JSON for latest RPMs in the QA yum repo.
+   WARNING: This will NOT include any RPMs that are needed but not included
+   in the yum repo (i.e. haproxy)."
+  [dir-key]
+  (json/encode
+   {:rpm_files
+    (dissoc (apply merge
+     (mapv
+      #(hash-map (:name %1) (rpms/rpm-map->rpm-name %1))
+      (list-latest-rpms dir-key)))
+     nil)}))
+
+(defn rpm-json-for-qa
+  []
+  (rpm-json :rpm-qa-dir))
+
+(defn rpm-json-for-stage
+  []
+  (rpm-json :rpm-stage-dir))
+
+(defn rpm-json-for-prod
+  []
+  (rpm-json :rpm-prod-dir))
 
 (defn new-qa-rpms
   "Returns a list of rpm maps representing the rpms that are in the dev repo
@@ -228,7 +247,7 @@
         port      (:rpm-host-port @config)
         user      (:rpm-host-user @config)
         sudo-pass (:sudo-password @config)
-        from-dir   (ft/path-join (:rpm-base-dir @config) 
+        from-dir   (ft/path-join (:rpm-base-dir @config)
                                  (from-dir-sym @config))
         to-dir    (ft/path-join (:rpm-base-dir @config)
                                 (to-dir-sym @config))]
@@ -261,10 +280,10 @@
         user      (:rpm-host-user @config)
         sudo-pass (:sudo-password @config)
         work-dir  (ft/path-join (:rpm-base-dir @config)
-                                (rpm-dir @config))] 
-    (report-all 
+                                (rpm-dir @config))]
+    (report-all
      (rpms/createrepo host port user sudo-pass work-dir))
-    
+
     (report-all
      (rpms/chown-remote-dir host port user sudo-pass work-dir "root:www"))))
 
@@ -290,7 +309,7 @@
    (script-setup-scm scm-url (:scm-working-dir @config))))
 
 (defn run-export-tool
-  "Runs export tools from the latest built scm tarball against a deployed 
+  "Runs export tools from the latest built scm tarball against a deployed
    version of the DE.
 
    When this function exits, you should have a screen session named
@@ -314,7 +333,7 @@
   [dest]
   (let [de-host     (:de-host @config)
         de-port     (:de-port @config)
-        working-dir (:scm-working-dir @config)] 
+        working-dir (:scm-working-dir @config)]
     (clj-execute
      (script-run-import-tool working-dir de-host de-port dest))))
 
@@ -324,7 +343,7 @@
   [dest]
   (let [de-host     (:de-host @config)
         de-port     (:de-port @config)
-        working-dir (:scm-working-dir @config)] 
+        working-dir (:scm-working-dir @config)]
     (clj-execute
      (script-run-export-analyses working-dir de-host de-port dest))))
 
@@ -333,7 +352,7 @@
   [dest]
   (let [de-host     (:de-host @config)
         de-port     (:de-port @config)
-        working-dir (:scm-working-dir @config)] 
+        working-dir (:scm-working-dir @config)]
     (clj-execute
      (script-run-import-analyses working-dir de-host de-port dest))))
 
