@@ -7,6 +7,7 @@
         [slingshot.slingshot :only [try+ throw+]])
   (:require [clojure.string :as string]
             [clojure.java.io :as io]
+            [cheshire.core :as json]
             [clojure-commons.file-utils :as ft]
             [dingle.rpms :as rpms]
             [clojure.set :as set]))
@@ -185,17 +186,36 @@
 
 (defn new-repo-rpms
   [rpm-source-dir rpm-dest-dir]
-  (let [dev-dir (ft/path-join (:rpm-base-dir @config)
-                              (rpm-source-dir @config))
-        qa-dir  (ft/path-join (:rpm-base-dir @config)
-                              (rpm-dest-dir @config))
-        host    (:rpm-host @config)
-        port    (:rpm-host-port @config)
-        user    (:rpm-host-user @config)]
-    (into []
-          (set/difference
-           (set (list-latest-rpms rpm-source-dir))
-           (set (list-latest-rpms rpm-dest-dir))))))
+  (into []
+    (set/difference
+      (set (list-latest-rpms rpm-source-dir))
+      (set (list-latest-rpms rpm-dest-dir)))))
+
+(defn rpm-json
+  "Returns a string containing JSON for latest RPMs in the QA yum repo.
+   WARNING: This will NOT include any RPMs that are needed but not included
+   in the yum repo (i.e. haproxy)."
+  [dir-key]
+  (json/encode
+   {:rpm_files
+    (dissoc (apply merge
+     (mapv
+      #(hash-map (:name %1) (rpms/rpm-map->rpm-name %1))
+      (list-latest-rpms dir-key)))
+     nil)}
+   {:pretty true}))
+
+(defn rpm-json-for-qa
+  []
+  (rpm-json :rpm-qa-dir))
+
+(defn rpm-json-for-stage
+  []
+  (rpm-json :rpm-stage-dir))
+
+(defn rpm-json-for-prod
+  []
+  (rpm-json :rpm-prod-dir))
 
 (defn new-qa-rpms
   "Returns a list of rpm maps representing the rpms that are in the dev repo
